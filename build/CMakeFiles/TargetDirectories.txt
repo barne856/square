@@ -1,0 +1,11 @@
+/home/bb/DEV/LIT/build/CMakeFiles/LIT.dir
+/home/bb/DEV/LIT/build/CMakeFiles/solid_color.dir
+/home/bb/DEV/LIT/build/CMakeFiles/tests.dir
+/home/bb/DEV/LIT/build/CMakeFiles/edit_cache.dir
+/home/bb/DEV/LIT/build/CMakeFiles/rebuild_cache.dir
+/home/bb/DEV/LIT/build/_deps/catch2-build/CMakeFiles/edit_cache.dir
+/home/bb/DEV/LIT/build/_deps/catch2-build/CMakeFiles/rebuild_cache.dir
+/home/bb/DEV/LIT/build/_deps/catch2-build/src/CMakeFiles/Catch2.dir
+/home/bb/DEV/LIT/build/_deps/catch2-build/src/CMakeFiles/Catch2WithMain.dir
+/home/bb/DEV/LIT/build/_deps/catch2-build/src/CMakeFiles/edit_cache.dir
+/home/bb/DEV/LIT/build/_deps/catch2-build/src/CMakeFiles/rebuild_cache.dir
