@@ -1,0 +1,3 @@
+[submodule "ext/SQUINT"]
+	path = ext/SQUINT
+	url = https://github.com/barne856/SQUINT
