@@ -5,7 +5,7 @@ project(LIT)
 set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
-include_directories("./include" ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR})
+include_directories("./include" "./ext/SQUINT/include" ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR})
 set(BUILD_TESTING OFF) # disable Catch2 self tests
 
 ## Build Library
