@@ -5,20 +5,34 @@ project(LIT)
 set(CMAKE_CXX_STANDARD 20)
 find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
-include_directories("./include" "./ext/SQUINT/include" ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR})
+find_package(GLEW REQUIRED)
+include_directories("./include" "./ext/SQUINT/include" ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
 set(BUILD_TESTING OFF) # disable Catch2 self tests
+
+if(MSVC)
+add_definitions(
+    -DTW_STATIC
+    -DTW_NO_LIB_PRAGMA
+    -DTW_NO_DIRECT3D
+    -DGLEW_STATIC
+)
+endif()
 
 ## Build Library
 set(LIB_SRC
 src/entity.cpp
 src/renderer.cpp
+src/sdl_gl_renderer.cpp
 )
 add_library(LIT ${LIB_SRC})
-target_link_libraries(LIT SDL2::SDL2 OpenGL::GL)
+target_link_libraries(LIT SDL2::SDL2 OpenGL::GL GLEW::GLEW)
 
 ## Build Sample Apps
-add_executable(solid_color sample_apps/solid_color/main.cpp)
+add_executable(solid_color sample_apps/solid_color/solid_color.cpp)
 target_link_libraries(solid_color LIT)
+
+add_executable(sample_scene sample_apps/sample_scene/sample_scene.cpp)
+target_link_libraries(sample_scene LIT)
 
 ## Include Catch2 for Unit Tests
 Include(FetchContent)

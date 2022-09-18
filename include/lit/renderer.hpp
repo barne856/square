@@ -1,8 +1,8 @@
 #ifndef LIT_RENDERER
 #define LIT_RENDERER
 #include "lit/entity.hpp"
-#include <GL/gl.h>
-#include <SDL.h>
+#include <filesystem>
+#include <memory>
 
 namespace lit {
 enum class cursor_type {
@@ -20,38 +20,8 @@ enum class debug_mode {
     LOW,
     NOTIFICATION,
 };
-class app;
-class sdl_gl;
-class renderer : public object {
-    friend class app;
-    friend class sdl_gl;
 
-  public:
-    inline void exit() { running = false; }
-    // api commands
-    virtual void clear_color_buffer(squint::fvec4 color) = 0;
-
-  private:
-    void run_step();
-    // create the context will be final in renderer impl
-    virtual void create_context() = 0;
-    virtual void poll_events() = 0;
-    // cleanup the context
-    virtual void destroy_context() = 0;
-    virtual void activate_context() = 0;
-    virtual void swap_buffers() = 0;
-    virtual void update(squint::quantities::time_f dt) override final;
-    virtual void render(squint::quantities::time_f dt) override final;
-    virtual bool on_key(const key_event &event) override final;
-    virtual bool on_mouse_button(const mouse_button_event &event) override final;
-    virtual bool on_mouse_move(const mouse_move_event &event) override final;
-    virtual bool on_mouse_wheel(const mouse_scroll_event &event) override final;
-    virtual bool on_resize(const window_resize_event &event) override final;
-    object *active_object = nullptr;
-
-  protected:
-    // load the root object
-    void load_object(object *obj);
+struct renderer_properties {
     const char *window_title = "untitled";
     int window_width = 1280;
     int window_height = 720;
@@ -64,6 +34,43 @@ class renderer : public object {
     bool running = true;
     squint::quantities::time_f fixed_dt{1.f / 60.f};
 };
+class app;
+class shader;
+class renderer : public object {
+    friend class app;
+
+  public:
+    inline void exit() { properties.running = false; }
+    // api commands
+    virtual void clear_color_buffer(squint::fvec4 color) = 0;
+    virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) = 0;
+    inline const renderer_properties &get_properties() const { return properties; }
+
+  private:
+    void run_step();
+    object *active_object = nullptr;
+
+  protected:
+    // create the context will be final in renderer impl
+    virtual void create_context() = 0;
+    virtual void poll_events() = 0;
+    // cleanup the context
+    virtual void destroy_context() = 0;
+    virtual void activate_context() = 0;
+    virtual void swap_buffers() = 0;
+
+    virtual void update(squint::quantities::time_f dt) override final;
+    virtual void render(squint::quantities::time_f dt) override final;
+    virtual bool on_key(const key_event &event) override final;
+    virtual bool on_mouse_button(const mouse_button_event &event) override final;
+    virtual bool on_mouse_move(const mouse_move_event &event) override final;
+    virtual bool on_mouse_wheel(const mouse_scroll_event &event) override final;
+    virtual bool on_resize(const window_resize_event &event) override final;
+
+    // load the root object
+    void load_object(object *obj);
+    renderer_properties properties{};
+};
 class app {
   private:
     app() : active_renderer_ptr(nullptr) {}
@@ -71,6 +78,7 @@ class app {
     renderer *active_renderer_ptr;
 
   public:
+    // this is a singleton class so it should never be copied or moved
     app(const app &) = delete;
     app(app &&) = delete;
     app &operator=(const app &) = delete;
@@ -88,19 +96,12 @@ class app {
     void attach_renderer(std::unique_ptr<renderer> obj);
     void run();
 };
-class sdl_gl : public renderer {
+class shader {
   public:
-    virtual void clear_color_buffer(squint::fvec4 color);
-
-  private:
-    virtual void create_context() override final;
-    virtual void poll_events() override final;
-    virtual void destroy_context() override final;
-    virtual void activate_context() override final;
-    virtual void swap_buffers() override final;
-    SDL_GLContext glcontext;
-    SDL_Window *window;
-    unsigned int window_id;
+    virtual void activate() = 0;
+    virtual ~shader() {}
+    virtual void upload_mat4(const char *name, squint::fmat4 value, bool suppress_warnings = false) = 0;
+    virtual void upload_vec4(const char *name, squint::fvec4 value, bool suppress_warnings = false) = 0;
 };
 } // namespace lit
 #endif

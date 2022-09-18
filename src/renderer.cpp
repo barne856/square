@@ -21,7 +21,7 @@ void renderer::run_step() {
         std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t2 - t1);
         squint::quantities::time_f dt{time_span.count()};
         t1 = t2;
-        update(fixed_dt);
+        update(properties.fixed_dt);
         render(dt);
         swap_buffers();
     }
@@ -31,7 +31,7 @@ void app::run() {
         int i = 0;
         bool renderer_exit = false;
         for (auto &r : renderers) {
-            if (r->running) {
+            if (r->properties.running) {
                 active_renderer_ptr = r.get();
                 r->run_step();
                 active_renderer_ptr = nullptr;
@@ -55,82 +55,19 @@ bool renderer::on_mouse_wheel(const mouse_scroll_event &event) { return active_o
 bool renderer::on_resize(const window_resize_event &event) { return active_object->on_resize(event); }
 std::unique_ptr<renderer> app::detach_renderer(size_t i) {
     auto r = std::move(renderers[i]);
+    active_renderer_ptr = r.get();
     r->on_exit();
     r->destroy_context();
     renderers.erase(renderers.begin() + i);
+    active_renderer_ptr = nullptr;
     return r;
 }
 void app::attach_renderer(std::unique_ptr<renderer> r) {
+    active_renderer_ptr = r.get();
     r->create_context();
     r->on_enter();
     renderers.push_back(std::move(r));
+    active_renderer_ptr = nullptr;
 }
-void sdl_gl::create_context() {
-    auto window_flag = fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE;
-    window = SDL_CreateWindow(window_title, 0, 0, window_width, window_height, SDL_WINDOW_OPENGL | window_flag);
-    window_id = SDL_GetWindowID(window);
-    glcontext = SDL_GL_CreateContext(window);
-}
-void sdl_gl::poll_events() {
-    std::vector<SDL_Event> unhandled_events{};
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        if (event.window.windowID == window_id) {
-            switch (event.type) {
-            case SDL_WINDOWEVENT:
-                switch (event.window.event) {
-                case SDL_WINDOWEVENT_CLOSE:
-                    running = false;
-                    break;
 
-                default:
-                    break;
-                }
-                break;
-            case SDL_KEYUP:
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym) {
-                case SDLK_LEFT:
-                    on_key(key_event::LEFT_DOWN);
-                    break;
-                case SDLK_RIGHT:
-                    on_key(key_event::RIGHT_DOWN);
-                    break;
-                case SDLK_UP:
-                    on_key(key_event::UP_DOWN);
-                    break;
-                case SDLK_DOWN:
-                    on_key(key_event::DOWN_DOWN);
-                    break;
-                case SDLK_ESCAPE:
-                    on_key(key_event::ESCAPE_DOWN);
-                default:
-                    break;
-                }
-                break;
-            case SDL_QUIT:
-                running = false;
-            default:
-                break;
-            }
-        } else {
-            unhandled_events.push_back(event);
-        }
-    }
-    for (auto &e : unhandled_events) {
-        SDL_PushEvent(&e);
-    }
-}
-void sdl_gl::destroy_context() {
-    SDL_GL_DeleteContext(glcontext);
-    SDL_DestroyWindow(window);
-}
-void sdl_gl::activate_context() { SDL_GL_MakeCurrent(window, glcontext); }
-void sdl_gl::swap_buffers() { SDL_GL_SwapWindow(window); }
-
-void sdl_gl::clear_color_buffer(squint::fvec4 color) {
-    glClearColor(color[0], color[1], color[2], color[3]);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
 } // namespace lit
