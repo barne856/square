@@ -62,7 +62,7 @@ class basic_material : public entity<basic_material> {
         gen_render_system<basic_material_render_system>();
     }
     void on_enter() override {
-        basic_material_shader = std::move(app::instance().active_renderer()->gen_shader("../shaders/vertex_color"));
+        basic_material_shader = std::move(app::instance().active_renderer()->gen_shader("../shaders/basic_texture"));
     }
     void on_exit() override {}
     camera *cam;
@@ -81,6 +81,7 @@ template <typename T> class sample_obj_render_system : public render_system<T> {
             auto s = entity.mat->basic_material_shader.get();
             // entity.color = {0.3f, 0.3f, 0.8f, 1.0f};
             // s->upload_vec4("u_color", entity.color);
+            s->upload_texture2D("tex", entity.tex.get());
             entity.mesh->face_towards({0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
             s->upload_mat4("model", entity.mesh->get_transformation_matrix());
             entity.mesh->draw();
@@ -92,11 +93,13 @@ class sample_obj : public entity<sample_obj>, public basic_material_properties {
     sample_obj(basic_material *mat) : mat(mat) { gen_render_system<sample_obj_render_system>(); }
     void on_enter() override {
         mesh = std::move(std::make_unique<quad_mesh>());
+        tex = app::instance().active_renderer()->gen_texture("../textures/checkerboard.png");
         mesh->bind_shader(mat->basic_material_shader.get());
     }
     void on_exit() override { mesh = nullptr; }
     basic_material *mat;
     std::unique_ptr<quad_mesh> mesh;
+    std::unique_ptr<texture2D> tex;
 };
 
 // LAYER ---------------------------------------------------------------------------------------------------------------
@@ -111,7 +114,7 @@ template <typename T> class sample_scene_physics : public physics_system<T> {
     void update(time_f dt, T &entity) const override {
         static time_f t = time_f::seconds(0);
         t += dt;
-        entity.set_position({0.0f, -5.0f, std::sin(t.as_seconds())});
+        entity.set_position({0.0f, -5.0f + 3.0f * std::sin(t.as_seconds()), std::sin(t.as_seconds())});
         entity.face_towards({0.f, 0.f, 0.f}, {0.f, 0.f, 1.f});
     }
 };

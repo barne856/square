@@ -88,6 +88,105 @@ GLenum gl_index_type(index_type type) {
         return GL_NONE;
     }
 }
+GLenum gl_sized_tex_format(texture_type type) {
+    switch (type) {
+    case texture_type::R8:
+        return GL_R8;
+    case texture_type::RG8:
+        return GL_RG8;
+    case texture_type::RGB8:
+        return GL_RGB8;
+    case texture_type::RGBA8:
+        return GL_RGBA8;
+    case texture_type::R32F:
+        return GL_R32F;
+    case texture_type::RG32F:
+        return GL_RG32F;
+    case texture_type::RGB32F:
+        return GL_RGB32F;
+    case texture_type::RGBA32F:
+        return GL_RGBA32F;
+    case texture_type::DEPTH:
+        return GL_DEPTH_COMPONENT32F;
+    default:
+        return GL_NONE;
+    }
+}
+
+GLenum gl_tex_format(texture_type type) {
+    switch (type) {
+    case texture_type::R8:
+        return GL_RED;
+    case texture_type::RG8:
+        return GL_RG;
+    case texture_type::RGB8:
+        return GL_RGB;
+    case texture_type::RGBA8:
+        return GL_RGBA;
+    case texture_type::R32F:
+        return GL_RED;
+    case texture_type::RG32F:
+        return GL_RG;
+    case texture_type::RGB32F:
+        return GL_RGB;
+    case texture_type::RGBA32F:
+        return GL_RGBA;
+    case texture_type::DEPTH:
+        return GL_DEPTH_COMPONENT;
+    default:
+        return GL_NONE;
+    }
+}
+
+int gl_tex_bytes(texture_type type) {
+    switch (type) {
+    case texture_type::R8:
+        return 1;
+    case texture_type::RG8:
+        return 1;
+    case texture_type::RGB8:
+        return 1;
+    case texture_type::RGBA8:
+        return 1;
+    case texture_type::R32F:
+        return 4;
+    case texture_type::RG32F:
+        return 4;
+    case texture_type::RGB32F:
+        return 4;
+    case texture_type::RGBA32F:
+        return 4;
+    case texture_type::DEPTH:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+GLenum gl_tex_type(texture_type type) {
+    switch (type) {
+    case texture_type::R8:
+        return GL_UNSIGNED_BYTE;
+    case texture_type::RG8:
+        return GL_UNSIGNED_BYTE;
+    case texture_type::RGB8:
+        return GL_UNSIGNED_BYTE;
+    case texture_type::RGBA8:
+        return GL_UNSIGNED_BYTE;
+    case texture_type::R32F:
+        return GL_FLOAT;
+    case texture_type::RG32F:
+        return GL_FLOAT;
+    case texture_type::RGB32F:
+        return GL_FLOAT;
+    case texture_type::RGBA32F:
+        return GL_FLOAT;
+    case texture_type::DEPTH:
+        return GL_FLOAT;
+    default:
+        return GL_NONE;
+    }
+}
 void GLAPIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                        const GLchar *message, const void *userParam) {
     auto debug_state = static_cast<const sdl_gl_renderer *>(userParam)->get_properties().debug;
@@ -137,7 +236,7 @@ void sdl_gl_renderer::create_context() {
     // Initialize PNG loading
     int imgFlags = IMG_INIT_PNG;
     if (!(IMG_Init(imgFlags) & imgFlags)) {
-        throw std::runtime_error("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+        throw std::runtime_error("SDL_image could not initialize! SDL_image Error: " + std::string(IMG_GetError()));
     }
 }
 void sdl_gl_renderer::poll_events() {
@@ -864,6 +963,9 @@ std::unique_ptr<buffer> sdl_gl_renderer::gen_buffer(const void *data, const size
                                                     const buffer_access_type type) {
     return std::make_unique<sdl_gl_buffer>(data, size_in_bytes, num_elements, format, type);
 }
+std::unique_ptr<texture2D> sdl_gl_renderer::gen_texture(const std::filesystem::path &image_filepath) {
+    return std::make_unique<sdl_gl_texture2D>(image_filepath);
+}
 std::unique_ptr<vertex_input_assembly> sdl_gl_renderer::gen_vertex_input_assembly(index_type type) {
     return std::make_unique<sdl_gl_vertex_input_assembly>(type);
 }
@@ -1016,15 +1118,48 @@ void sdl_gl_shader::upload_texture2D(const std::string &name, texture2D *texture
     }
     if (!resource_location_cache.count(name)) {
         // cache the location
-        resource_location_cache.insert_or_assign(name, glGetProgramResourceLocation(program, GL_UNIFORM, name));
+        resource_location_cache.insert_or_assign(name, glGetProgramResourceLocation(program, GL_UNIFORM, name.c_str()));
         texture_binding_cache.insert_or_assign(name, static_cast<GLuint>(texture_binding_cache.size()));
         glUniform1i(resource_location_cache[name], texture_binding_cache[name]);
     }
-    if (resource_location_cache_[name] == -1 && suppress_warnings == false) {
+    if (resource_location_cache[name] == -1 && suppress_warnings == false) {
         std::cerr << "SHADER WARNING: No uniform sampler2D '" << name << "' exists in the shader" << std::endl;
     } else {
         glBindTextureUnit(texture_binding_cache[name], texture->get_id());
     }
 }
 uint32_t sdl_gl_shader::get_id() { return program; }
+sdl_gl_texture2D::sdl_gl_texture2D(const std::filesystem::path &image_filepath) {
+    SDL_Surface *surface = IMG_Load(image_filepath.string().c_str());
+    if (surface == nullptr) {
+        throw std::runtime_error("Could not read image " + image_filepath.string());
+    }
+    width = surface->w;
+    height = surface->h;
+    num_elements = width * height;
+    uint8_t channels = surface->format->BytesPerPixel;
+    glCreateBuffers(1, &buffer_id);
+    glNamedBufferStorage(buffer_id, num_elements * channels, surface->pixels, 0);
+    SDL_FreeSurface(surface);
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &texture_id);
+    switch (channels) {
+    case 1:
+        type = texture_type::R8;
+        break;
+    case 2:
+        type = texture_type::RG8;
+        break;
+    case 3:
+        type = texture_type::RGB8;
+        break;
+    case 4:
+        type = texture_type::RGBA8;
+        break;
+    }
+    glTextureStorage2D(texture_id, 1, gl_sized_tex_format(type), width, height);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer_id);
+    glTextureSubImage2D(texture_id, 0, 0, 0, width, height, gl_tex_format(type), gl_tex_type(type), nullptr);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
 } // namespace lit

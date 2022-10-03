@@ -88,6 +88,27 @@ enum class index_type {
     UNSIGNED_SHORT, // 2 bytes
     UNSIGNED_INT,   // 4 bytes
 };
+/**
+ * @brief The TextureType describes the format of the data used to create a
+ * Texture object.
+ */
+enum class texture_type {
+    R8,      /**< The Texture data is formated as single channel 8-bit bytes.*/
+    RG8,     /**< The Texture data is formated as two channel 8-bit bytes.*/
+    RGB8,    /**< The Texture data is formated as three channel 8-bit bytes.*/
+    RGBA8,   /**< The Texture data is formated as four channel 8-bit bytes.*/
+    R32F,    /**< The Texture data is formated as single channel 32-bit floating
+                point numbers.*/
+    RG32F,   /**< The Texture data is formated as two channel 32-bit floating point
+                numbers.*/
+    RGB32F,  /**< The Texture data is formated as three channel 32-bit floating
+                point numbers.*/
+    RGBA32F, /**< The Texture data is formated as four channel 32-bit floating
+                point numbers.*/
+    DEPTH    /**< The Texture data is formated as single channel 32-bit floating
+                point numbers. And used to create textures of the depth values from a
+                Framebuffer.*/
+};
 
 struct renderer_properties {
     const char *window_title = "untitled";
@@ -192,6 +213,7 @@ class shader;
 class buffer;
 class mesh;
 class vertex_input_assembly;
+class texture2D;
 class renderer : public object {
     friend class app;
 
@@ -208,6 +230,7 @@ class renderer : public object {
     }
     virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes, const size_t num_elements,
                                                const buffer_format &format, const buffer_access_type type) = 0;
+    virtual std::unique_ptr<texture2D> gen_texture(const std::filesystem::path &image_filepath) = 0;
     virtual std::unique_ptr<vertex_input_assembly> gen_vertex_input_assembly(index_type type) = 0;
     virtual void draw_mesh(mesh *m, draw_method method) = 0;
     virtual void set_viewport(size_t x, size_t y, size_t width, size_t height) = 0;
@@ -323,7 +346,6 @@ class app {
         }
     }
 };
-class texture2D;
 class shader {
   public:
     virtual void activate() = 0;

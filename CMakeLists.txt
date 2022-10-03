@@ -3,10 +3,14 @@ cmake_minimum_required(VERSION 3.20)
 ## Project Settings
 project(LIT)
 set(CMAKE_CXX_STANDARD 20)
-find_package(SDL2 REQUIRED)
+INCLUDE(FindPkgConfig)
+PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
+PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
+#find_package(SDL2 REQUIRED)
+#find_package(SDL_IMAGE REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-include_directories("./include" "./ext/SQUINT/include" ${SDL2_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
+include_directories("./include" "./ext/SQUINT/include" ${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
 set(BUILD_TESTING OFF) # disable Catch2 self tests
 
 if(MSVC)
@@ -25,7 +29,7 @@ src/renderer.cpp
 src/sdl_gl.cpp
 )
 add_library(LIT ${LIB_SRC})
-target_link_libraries(LIT SDL2::SDL2 OpenGL::GL GLEW::GLEW)
+target_link_libraries(LIT  ${SDL2_LIBRARIES}  ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW)
 
 ## Build Sample Apps
 add_executable(solid_color sample_apps/solid_color/solid_color.cpp)
