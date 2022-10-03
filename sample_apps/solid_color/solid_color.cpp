@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "lit/sdl_gl_renderer.hpp"
+#include "lit/sdl_gl.hpp"
 #include <cmath>
 
 using namespace lit;
@@ -79,7 +79,7 @@ class solid_color_layer : public entity<solid_color_layer> {
 // create the renderer and set the window properties used to render the layer.
 // This attaches a single layer and activates it when the renderer is loaded
 // (attached to the app)
-class solid_color_renderer : public sdl_gl {
+class solid_color_renderer : public sdl_gl_renderer {
   public:
     solid_color_renderer() {
         properties.window_title = "untitled";

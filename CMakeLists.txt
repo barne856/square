@@ -22,7 +22,7 @@ endif()
 set(LIB_SRC
 src/entity.cpp
 src/renderer.cpp
-src/sdl_gl_renderer.cpp
+src/sdl_gl.cpp
 )
 add_library(LIT ${LIB_SRC})
 target_link_libraries(LIT SDL2::SDL2 OpenGL::GL GLEW::GLEW)
