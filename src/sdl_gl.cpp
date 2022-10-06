@@ -1,5 +1,5 @@
 #include "lit/sdl_gl.hpp"
-#include "lit/mesh.hpp"
+#include "lit/components/mesh.hpp"
 #include <fstream>
 namespace lit {
 // Debug functions
