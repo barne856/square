@@ -5,7 +5,15 @@
 #include "lit/renderer.hpp"
 
 namespace lit {
-
+/**
+ * @brief A drawable mesh.
+ *
+ * @details A mesh contains a transform (or model matrix) along with a vertex buffer and possibly an index buffer. The
+ * vertex buffer must be compatible with any shader bound to the mesh in order to be rendered successfully. This means
+ * the buffer attributes must match the inputs to the vertex shader. If index_type is not NONE, an index buffer must be
+ * provided to specify the order to render the vertices in. The draw methods are identical to OpenGL draw methods.
+ *
+ */
 class mesh : public transform {
   public:
     mesh(draw_method method, index_type type = index_type::NONE) : method(method) {

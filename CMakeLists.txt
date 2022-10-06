@@ -27,6 +27,7 @@ set(LIB_SRC
 src/entity.cpp
 src/renderer.cpp
 src/sdl_gl.cpp
+src/components/transform.cpp
 )
 add_library(LIT ${LIB_SRC})
 target_link_libraries(LIT  ${SDL2_LIBRARIES}  ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW)

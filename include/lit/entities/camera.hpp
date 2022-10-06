@@ -7,7 +7,16 @@
 #include <concepts>
 
 namespace lit {
+/**
+ * @brief Camera projection types
+ *
+ */
 enum class projection_type { PERSPECTIVE, ORTHOGRAPHIC };
+/**
+ * @brief Concept for the camera entity.
+ *
+ * @details Used as concept for render_systems, physics_systems, and controls_systems templates.
+ */
 template <typename T>
 concept projectable = requires(T t) {
     requires transformable<T>;
@@ -30,6 +39,10 @@ concept projectable = requires(T t) {
     { t.get_near_clip_plane_persp() } -> std::same_as<float>;
     { t.get_far_clip_plane_persp() } -> std::same_as<float>;
 };
+/**
+ * @brief Controller that handles updating the camera when the window resizes.
+ *
+ */
 template <projectable T> class camera_resize_controller : public controls_system<T> {
   public:
     virtual bool on_resize(const window_resize_event &event, T &cam) const override final {
@@ -40,6 +53,20 @@ template <projectable T> class camera_resize_controller : public controls_system
         return true;
     }
 };
+/**
+ * @brief Camera entity used for rendering scenes.
+ *
+ * @details All scenes that render objects will contain at least one camera entity. Multiple cameras can be used on a
+ * single scene. For example, a single scene may render 3D world objects using a perspective projection and overlay UI
+ * elements rendered with another camera using an orthographic projection.
+ *
+ * This class provides some methods to modify and update the camera. You must run 'recalculate_projection()' after you
+ * update the camera for the changes to take effect.
+ *
+ * The clip planes are to be negative if they are behind the viewer and positive if they are in front of the viewer.
+ * fovy is the vertical field of view if type is PERSPECTIVE and is in radians.
+ * ortho_scale is the scale of the camera view if type is ORTHOGRAPHIC and is measured vertically from top to bottom.
+ */
 class camera : public entity<camera>, public transform {
   public:
     camera(projection_type type, float aspect) : type(type), aspect(aspect) {
@@ -57,42 +84,34 @@ class camera : public entity<camera>, public transform {
             break;
         }
     }
-    void set_type(projection_type type) { this->type = type; }
-    void set_fovy(float fovy) { this->fovy = fovy; }
-    void set_ortho_scale(float ortho_scale) { this->ortho_scale = ortho_scale; }
-    void set_aspect(float aspect) { this->aspect = aspect; }
-    void set_near_clip_plane_ortho(float near) { this->ortho_near = near; }
-    void set_far_clip_plane_ortho(float far) { this->ortho_far = far; }
-    void set_near_clip_plane_persp(float near) { this->persp_near = near; }
-    void set_far_clip_plane_persp(float far) { this->persp_far = far; }
-    projection_type get_type() const { return type; }
-    squint::fmat4 get_projection_matrix() const { return projection; }
-    float get_fovy() const { return fovy; }
-    float get_ortho_scale() const { return ortho_scale; }
-    float get_aspect() const { return aspect; }
-    float get_near_clip_plane_ortho() const { return ortho_near; }
-    float get_far_clip_plane_ortho() const { return ortho_far; }
-    float get_near_clip_plane_persp() const { return persp_near; }
-    float get_far_clip_plane_persp() const { return persp_far; }
+    inline void set_type(projection_type type) { this->type = type; }
+    inline void set_fovy(float fovy) { this->fovy = fovy; }
+    inline void set_ortho_scale(float ortho_scale) { this->ortho_scale = ortho_scale; }
+    inline void set_aspect(float aspect) { this->aspect = aspect; }
+    inline void set_near_clip_plane_ortho(float near) { this->ortho_near = near; }
+    inline void set_far_clip_plane_ortho(float far) { this->ortho_far = far; }
+    inline void set_near_clip_plane_persp(float near) { this->persp_near = near; }
+    inline void set_far_clip_plane_persp(float far) { this->persp_far = far; }
+    inline projection_type get_type() const { return type; }
+    inline squint::fmat4 get_projection_matrix() const { return projection; }
+    inline float get_fovy() const { return fovy; }
+    inline float get_ortho_scale() const { return ortho_scale; }
+    inline float get_aspect() const { return aspect; }
+    inline float get_near_clip_plane_ortho() const { return ortho_near; }
+    inline float get_far_clip_plane_ortho() const { return ortho_far; }
+    inline float get_near_clip_plane_persp() const { return persp_near; }
+    inline float get_far_clip_plane_persp() const { return persp_far; }
 
   private:
-    squint::fmat4 projection; /**< The projection matrix of the camera.*/
-    float fovy = M_PI_4f;     /**< The vertical field of view of the Camera with type
-                                projection_type::PERSPECTIVE.*/
-    float ortho_scale = 1.0f; /**< The scale of the Camera's view with type
-                                  projection_type::ORTHOGRAPHIC.*/
-    float aspect = 1.0f;      /**< The aspect of the Camera's view.*/
-    float ortho_near =
-        -1.0f;               /**< The distance to the near clip plane of the
-                                 Camera using projection_type::ORTHOGRAPHIC. To be negative if plane is behind the viewer*/
-    float ortho_far = 1.0f;  /**< The distance to the far clip plane of the Camera
-                    using projection_type::ORTHOGRAPHIC.*/
-    float persp_near = 0.1f; /**< The distance to the near clip plane of the
-                   Camera using projection_type::PERSPECTIVE.*/
-    float persp_far = 10.0f; /**< The distance to the far clip plane of the
-                   Camera using projection_type::PERSPECTIVE.*/
-
-    projection_type type; /**< The projection_type of the Camera.*/
+    squint::fmat4 projection;
+    float fovy = M_PI_4f;
+    float ortho_scale = 1.0f;
+    float aspect = 1.0f;
+    float ortho_near = -1.0f;
+    float ortho_far = 1.0f;
+    float persp_near = 0.1f;
+    float persp_far = 10.0f;
+    projection_type type;
 };
 } // namespace lit
 #endif

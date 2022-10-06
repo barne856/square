@@ -3,9 +3,10 @@
 #include <squint/quantity.hpp>
 namespace lit {
 
+// event callback types
 struct mouse_scroll_event {
-    float x; // the amount scrolled horizontally, positive to the right and negative to the left.
-    float y; // the amount scrolled vertically, positive away from the user and negative toward the user.
+    float x; /**< the amount scrolled horizontally, positive to the right and negative to the left.*/
+    float y; /**< the amount scrolled vertically, positive away from the user and negative toward the user.*/
 };
 struct mouse_move_event {
     int x;    /**< window coordinates of mouse position (in pixels from left), reported if cursor is visible*/
@@ -236,16 +237,28 @@ enum class key_event {
     MENU_UP,
 };
 
+/**
+ * @brief System that provides render() callback for entities
+ *
+ */
 template <typename T> class render_system {
   public:
     virtual void render(squint::quantities::time_f dt, T &entity) const {}
     virtual ~render_system() {}
 };
+/**
+ * @brief System that provides update() callback for entities
+ *
+ */
 template <typename T> class physics_system {
   public:
     virtual void update(squint::quantities::time_f dt, T &entity) const {}
     virtual ~physics_system() {}
 };
+/**
+ * @brief System that provides event callbacks for entities
+ *
+ */
 template <typename T> class controls_system {
   public:
     virtual bool on_key(const key_event &event, T &entity) const { return false; }

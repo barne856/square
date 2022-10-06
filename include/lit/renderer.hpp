@@ -88,10 +88,6 @@ enum class index_type {
     UNSIGNED_SHORT, // 2 bytes
     UNSIGNED_INT,   // 4 bytes
 };
-/**
- * @brief The TextureType describes the format of the data used to create a
- * Texture object.
- */
 enum class texture_type {
     R8,      /**< The Texture data is formated as single channel 8-bit bytes.*/
     RG8,     /**< The Texture data is formated as two channel 8-bit bytes.*/
@@ -108,20 +104,6 @@ enum class texture_type {
     DEPTH    /**< The Texture data is formated as single channel 32-bit floating
                 point numbers. And used to create textures of the depth values from a
                 Framebuffer.*/
-};
-
-struct renderer_properties {
-    const char *window_title = "untitled";
-    uint64_t window_width = 1280;
-    uint64_t window_height = 720;
-    int samples = 0;
-    bool wireframe = false;
-    bool fullscreen = false;
-    bool vsync = false;
-    cursor_type cursor = cursor_type::ENABLED;
-    debug_mode debug = debug_mode::NOTIFICATION;
-    bool running = true;
-    squint::quantities::time_f fixed_dt{1.f / 60.f};
 };
 class buffer_attribute {
   public:
@@ -208,12 +190,32 @@ class buffer_format {
     size_t stride; /**< The stride in elements between attributes of the same type in
                   the buffer. The total size of all the BufferAttributes.*/
 };
+struct renderer_properties {
+    const char *window_title = "untitled";
+    uint64_t window_width = 1280;
+    uint64_t window_height = 720;
+    int samples = 0;
+    bool wireframe = false;
+    bool fullscreen = false;
+    bool vsync = false;
+    cursor_type cursor = cursor_type::ENABLED;
+    debug_mode debug = debug_mode::NOTIFICATION;
+    bool running = true;
+    squint::quantities::time_f fixed_dt{1.f / 60.f};
+};
 class app;
 class shader;
 class buffer;
 class mesh;
 class vertex_input_assembly;
 class texture2D;
+/**
+ * @brief Abstract base class for renderers implemented by rendering APIs.
+ *
+ * @details A renderer acts as the root object in an application. Loading an object in a renderer sets the active scene
+ * for the renderer. A renderer represents a renderable window or context to render into.
+ *
+ */
 class renderer : public object {
     friend class app;
 
@@ -237,20 +239,7 @@ class renderer : public object {
     virtual void set_cursor(cursor_type type) = 0;
 
   private:
-    void run_step() {
-        if (active_object) {
-            activate_context();
-            poll_events();
-            static auto t1 = std::chrono::high_resolution_clock::now();
-            auto t2 = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t2 - t1);
-            squint::quantities::time_f dt{time_span.count()};
-            t1 = t2;
-            update(properties.fixed_dt);
-            render(dt);
-            swap_buffers();
-        }
-    }
+    void run_step();
     object *active_object = nullptr;
 
   protected:
@@ -262,32 +251,24 @@ class renderer : public object {
     virtual void activate_context() = 0;
     virtual void swap_buffers() = 0;
 
-    virtual void update(squint::quantities::time_f dt) override final { active_object->update(dt); }
-    virtual void render(squint::quantities::time_f dt) override final { active_object->render(dt); }
-    virtual bool on_key(const key_event &event) override final { return active_object->on_key(event); }
-    virtual bool on_mouse_button(const mouse_button_event &event) override final {
-        return active_object->on_mouse_button(event);
-    }
-    virtual bool on_mouse_move(const mouse_move_event &event) override final {
-        return active_object->on_mouse_move(event);
-    }
-    virtual bool on_mouse_wheel(const mouse_scroll_event &event) override final {
-        return active_object->on_mouse_wheel(event);
-    }
-    virtual bool on_resize(const window_resize_event &event) override final { return active_object->on_resize(event); }
-
+    virtual void update(squint::quantities::time_f dt) override final;
+    virtual void render(squint::quantities::time_f dt) override final;
+    virtual bool on_key(const key_event &event) override final;
+    virtual bool on_mouse_button(const mouse_button_event &event) override final;
+    virtual bool on_mouse_move(const mouse_move_event &event) override final;
+    virtual bool on_mouse_wheel(const mouse_scroll_event &event) override final;
+    virtual bool on_resize(const window_resize_event &event) override final;
     // load the root object
-    void load_object(object *obj) {
-        if (active_object) {
-            active_object->on_unload();
-        }
-        active_object = obj;
-        if (active_object) {
-            active_object->on_load();
-        }
-    }
+    void load_object(object *obj);
     renderer_properties properties{};
 };
+/**
+ * @brief An application containing one or more renderers.
+ *
+ * @details This is a singleton class that is used to run the program. Rendering is orchestrated by the app and multiple
+ * renderers can be attached at a time and can be of different rendering APIs.
+ *
+ */
 class app {
   private:
     app() : active_renderer_ptr(nullptr) {}
@@ -346,6 +327,10 @@ class app {
         }
     }
 };
+/**
+ * @brief Abstract base class for shaders
+ *
+ */
 class shader {
   public:
     virtual void activate() = 0;
@@ -355,7 +340,10 @@ class shader {
     virtual void upload_texture2D(const std::string &name, texture2D *tex, bool supress_warnings = false) = 0;
     virtual uint32_t get_id() = 0;
 };
-
+/**
+ * @brief Abstract base class for buffers
+ *
+ */
 class buffer {
   public:
     buffer(const buffer_format &format, buffer_access_type type, size_t num_elements)
@@ -368,7 +356,7 @@ class buffer {
         }
         return result;
     }
-    virtual ~buffer() = 0;
+    virtual ~buffer(){};
     inline const buffer_format &get_format() const { return format; }
     virtual const uint32_t get_id() const = 0;
     virtual const size_t size() const = 0;
@@ -379,11 +367,21 @@ class buffer {
     void *buffer_ptr;
     size_t num_elements;
 };
+/**
+ * @brief Abstract base class for buffers
+ *
+ */
 class texture2D : public buffer {
   public:
     texture2D() : buffer({}, buffer_access_type::STATIC, 0) {}
 };
-
+/**
+ * @brief Abstract base class for vertex input assembly
+ *
+ * @details Organizes a set of vertex buffers and possibly an index buffer such that they can be rendered together. Also
+ * binds the buffer attributes to buffer binding points.
+ *
+ */
 class vertex_input_assembly {
   public:
     vertex_input_assembly(index_type type) : type(type) {}

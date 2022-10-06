@@ -6,6 +6,23 @@
 #include <vector>
 
 namespace lit {
+/**
+ * @brief Abstract base class for objects in a renderer.
+ *
+ * @details Objects can have any number of child objects and up to one parent object. Typically the renderer is the root
+ * object in an application.
+ *
+ * Existing objects can be attached or detached to another object and become a child of the object or generated and
+ * attached at once. All child objects run their update() and render() functions for each frame when the application is
+ * running. The methods are called in the order the objects were added to the parent and the  parent method will always
+ * be called first. The event callbacks (on_key, on_mouse_button, etc.) are called when events occur. The child objects
+ * are iterated in reverse order and the child methods are called before the parent method. If any child method returns
+ * true, the propogation up the tree stops and the event is considered handeled.
+ *
+ * When an object is loaded, all child objects are loaded. on_enter() and on_exit() are called for each child object in
+ * the object tree when the parent object is loaded/unloaded by an application.
+ *
+ */
 class object {
   public:
     object();
@@ -35,8 +52,16 @@ class object {
     object *parent_object;
     std::vector<std::unique_ptr<object>> child_objects{};
 };
-template <typename T>
-class entity : public object {
+/**
+ * @brief Abstract base class of an entity in a renderer.
+ *
+ * @details An entity is an 'object' that contains systems. Each attached system runs their render, update, and event
+ * callbacks depending on their type when the object runs those callbacks.
+ *
+ * All concrete entities that inherit from this abstract base class must use the CRTP template pattern. Systems attached
+ * to the entity must be templated so as to be compatible with the entity typically by using concepts.
+ */
+template <typename T> class entity : public object {
   public:
     virtual void update(squint::quantities::time_f dt) override final {
         std::for_each(physics_systems.begin(), physics_systems.end(),
