@@ -223,6 +223,11 @@ class renderer : public object {
     inline void exit() { properties.running = false; }
     // api commands
     virtual void clear_color_buffer(squint::fvec4 color) = 0;
+    virtual void wireframe_mode(bool enable) = 0;
+    virtual void clear_depth_buffer() = 0;
+    virtual void enable_face_culling(bool enable) = 0;
+    virtual void enable_depth_testing(bool enable) = 0;
+    virtual void enable_blending(bool enable) = 0;
     virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) = 0;
     inline const renderer_properties &get_properties() const { return properties; }
     template <typename T>

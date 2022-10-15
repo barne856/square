@@ -17,7 +17,7 @@ namespace lit {
 class mesh : public transform {
   public:
     mesh(draw_method method, index_type type = index_type::NONE) : method(method) {
-        input_assembly = app::instance().active_renderer()->gen_vertex_input_assembly(index_type::UNSIGNED_BYTE);
+        input_assembly = app::instance().active_renderer()->gen_vertex_input_assembly(type);
     }
     void bind_shader(shader *s) { input_assembly->bind_shader(s); }
     void set_index_buffer(std::unique_ptr<buffer> index_buffer) {

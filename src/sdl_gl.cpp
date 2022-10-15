@@ -234,7 +234,7 @@ void sdl_gl_renderer::create_context() {
     }
     set_cursor(properties.cursor);
     // Initialize PNG loading
-    int imgFlags = IMG_INIT_PNG;
+    int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
     if (!(IMG_Init(imgFlags) & imgFlags)) {
         throw std::runtime_error("SDL_image could not initialize! SDL_image Error: " + std::string(IMG_GetError()));
     }
@@ -954,6 +954,40 @@ void sdl_gl_renderer::swap_buffers() { SDL_GL_SwapWindow(window); }
 void sdl_gl_renderer::clear_color_buffer(squint::fvec4 color) {
     glClearColor(color[0], color[1], color[2], color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
+}
+void sdl_gl_renderer::wireframe_mode(bool enable) {
+    if (enable) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+}
+void sdl_gl_renderer::clear_depth_buffer() { glClear(GL_DEPTH_BUFFER_BIT); }
+void sdl_gl_renderer::enable_face_culling(bool enable) {
+    if (enable) {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+void sdl_gl_renderer::enable_depth_testing(bool enable) {
+    if (enable) {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDepthMask(GL_TRUE);
+    } else {
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(GL_FALSE);
+    }
+}
+void sdl_gl_renderer::enable_blending(bool enable) {
+    if (enable) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else {
+        glDisable(GL_BLEND);
+    }
 }
 std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::filesystem::path &shader_src_directory) {
     return std::make_unique<sdl_gl_shader>(shader_src_directory);

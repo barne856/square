@@ -13,6 +13,11 @@ class sdl_gl_renderer : public renderer {
 
   public:
     virtual void clear_color_buffer(squint::fvec4 color) override final;
+    virtual void wireframe_mode(bool enable) override final;
+    virtual void clear_depth_buffer() override final;
+    virtual void enable_face_culling(bool enable) override final;
+    virtual void enable_depth_testing(bool enable) override final;
+    virtual void enable_blending(bool enable) override final;
     virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) override final;
     virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes, const size_t num_elements,
                                                const buffer_format &format,

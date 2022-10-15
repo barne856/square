@@ -1,4 +1,4 @@
-# LIT - Layer Iterator Rendering Engine (name may change)
+# LIT - Layer Iterator Rendering Engine (name may change) (Maybe Firefly?)
 
 ```mermaid
 classDiagram

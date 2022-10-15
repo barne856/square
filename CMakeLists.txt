@@ -30,7 +30,7 @@ src/sdl_gl.cpp
 src/components/transform.cpp
 )
 add_library(LIT ${LIB_SRC})
-target_link_libraries(LIT  ${SDL2_LIBRARIES}  ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW)
+target_link_libraries(LIT ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW)
 
 ## Build Sample Apps
 add_executable(solid_color sample_apps/solid_color/solid_color.cpp)

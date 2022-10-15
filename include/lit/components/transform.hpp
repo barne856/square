@@ -67,6 +67,7 @@ class transform {
 
   private:
     squint::fmat4 transformation_matrix;
+    squint::fmat4 view_matrix;
 };
 
 } // namespace lit

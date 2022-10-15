@@ -8,6 +8,7 @@
 using namespace squint::quantities;
 
 namespace lit {
+// TODO: material concept with cam and shader members
 template <typename T> class basic_texture_render_system : public render_system<T> {
   public:
     void render(time_f dt, T &entity) const override {
