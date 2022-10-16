@@ -14,7 +14,8 @@ template <typename T> class sample_obj_render_system : public render_system<T> {
     void render(time_f dt, T &entity) const override {
         if (entity.mat && entity.mat->basic_texture_shader.get()) {
             auto s = entity.mat->basic_texture_shader.get();
-            s->upload_texture2D("tex", entity.tex.get());
+            s->upload_texture2D("earth_day", entity.earth_day.get());
+            s->upload_texture2D("earth_clouds", entity.earth_clouds.get());
             entity.mesh->face_towards({0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
             s->upload_mat4("model", entity.mesh->get_transformation_matrix());
             entity.mesh->draw();
@@ -25,14 +26,16 @@ class sample_obj : public entity<sample_obj> {
   public:
     sample_obj(basic_texture *mat) : mat(mat) { gen_render_system<sample_obj_render_system>(); }
     void on_enter() override {
-        mesh = std::move(std::make_unique<sphere_mesh>(5, 1.0f));
-        tex = app::instance().active_renderer()->gen_texture("../textures/sun.jpg");
+        mesh = std::move(std::make_unique<sphere_mesh>(100, 200, 1.0f));
+        earth_day = app::instance().active_renderer()->gen_texture("../textures/earth_day.jpg");
+        earth_clouds = app::instance().active_renderer()->gen_texture("../textures/earth_clouds.jpg");
         mesh->bind_shader(mat->basic_texture_shader.get());
     }
     void on_exit() override { mesh = nullptr; }
     basic_texture *mat;
     std::unique_ptr<sphere_mesh> mesh;
-    std::unique_ptr<texture2D> tex;
+    std::unique_ptr<texture2D> earth_day;
+    std::unique_ptr<texture2D> earth_clouds;
 };
 
 // LAYER ---------------------------------------------------------------------------------------------------------------
@@ -97,6 +100,7 @@ class sample_scene_renderer : public sdl_gl_renderer {
         properties.window_title = "untitled";
         properties.window_width = 1280;
         properties.window_height = 720;
+        properties.samples = 4;
         float init_aspect = float(properties.window_width) / float(properties.window_height);
         gen_object<sample_scene_layer>(projection_type::PERSPECTIVE, init_aspect);
     }
@@ -109,7 +113,9 @@ class sample_scene_renderer : public sdl_gl_renderer {
 
 int main() {
     // create app
+    sdl_gl_renderer::init();
     app::instance().gen_renderer<sample_scene_renderer>();
     app::instance().run();
+    sdl_gl_renderer::quit();
     return 0;
 }

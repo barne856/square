@@ -12,6 +12,8 @@ namespace lit {
 class sdl_gl_renderer : public renderer {
 
   public:
+    static void init();
+    static void quit();
     virtual void clear_color_buffer(squint::fvec4 color) override final;
     virtual void wireframe_mode(bool enable) override final;
     virtual void clear_depth_buffer() override final;

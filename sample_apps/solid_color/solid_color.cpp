@@ -97,9 +97,11 @@ class solid_color_renderer : public sdl_gl_renderer {
 int main() {
     // attach two renderers to the app. This will create two windows each with
     // their own controls and rendering systems.
+    sdl_gl_renderer::init();
     app::instance().gen_renderer<solid_color_renderer>();
     app::instance().gen_renderer<solid_color_renderer>();
     // run the app
     app::instance().run();
+    sdl_gl_renderer::quit();
     return 0;
 }

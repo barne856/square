@@ -194,7 +194,7 @@ struct renderer_properties {
     const char *window_title = "untitled";
     uint64_t window_width = 1280;
     uint64_t window_height = 720;
-    int samples = 0;
+    int samples = 1;
     bool wireframe = false;
     bool fullscreen = false;
     bool vsync = false;

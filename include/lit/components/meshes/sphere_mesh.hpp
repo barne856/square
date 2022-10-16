@@ -7,6 +7,7 @@ class sphere_mesh : public mesh {
     struct sphere_vertex {
         squint::fvec3 position;
         squint::fvec3 normal;
+        squint::fvec2 tex_coords;
     };
 
   public:
@@ -95,6 +96,82 @@ class sphere_mesh : public mesh {
                                                               {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
                                                           },
                                                           buffer_access_type::STATIC));
+    }
+    sphere_mesh(size_t n_lats, size_t n_lngs, float radius) : mesh(draw_method::TRIANGLES, index_type::UNSIGNED_INT) {
+        auto the_renderer = app::instance().active_renderer();
+        if (n_lngs < 3) {
+            n_lngs = 3;
+        }
+        if (n_lats < 2) {
+            n_lats = 2;
+        }
+        std::vector<sphere_vertex> data{};
+        std::vector<unsigned int> indices;
+        float delta_lat = M_PI / n_lats;
+        float delta_lng = 2 * M_PI / n_lngs;
+        float lat;
+        float lng;
+        // vertex data
+        for (int i = 0; i <= n_lats; i++) {
+            lat = M_PI / 2 - i * delta_lat; /* Starting -pi/2 to pi/2 */
+            float xy = radius * cosf(lat);  /* r * cos(phi) */
+            float z = radius * sinf(lat);   /* r * sin(phi )*/
+            /*
+             * We add (latitudes + 1) vertices per longitude because of equator,
+             * the North pole and South pole are not counted here, as they overlap.
+             * The first and last vertices have same position and normal, but
+             * different tex coords.
+             */
+            for (int j = 0; j <= n_lngs; ++j) {
+                lng = j * delta_lng;
+                squint::fvec3 position;
+                squint::fvec3 normal;
+                squint::fvec2 tex_coord;
+                position[0] = xy * cosf(lng);     /* x = r * cos(phi) * cos(theta)  */
+                position[1] = xy * sinf(lng);     /* y = r * cos(phi) * sin(theta) */
+                position[2] = z;                  /* z = r * sin(phi) */
+                tex_coord[0] = (float)j / n_lngs; /* s */
+                tex_coord[1] = (float)i / n_lats; /* t */
+                // normalized vertex normal
+                normal = position / radius;
+                data.push_back({position, normal, tex_coord});
+            }
+        }
+        /*
+         *  Indices
+         *  k1--k1+1
+         *  |  / |
+         *  | /  |
+         *  k2--k2+1
+         */
+        unsigned int k1, k2;
+        for (int i = 0; i < n_lats; ++i) {
+            k1 = i * (n_lngs + 1);
+            k2 = k1 + n_lngs + 1;
+            // 2 Triangles per latitude block excluding the first and last longitudes blocks
+            for (int j = 0; j < n_lngs; ++j, ++k1, ++k2) {
+                if (i != 0) {
+                    indices.push_back(k1);
+                    indices.push_back(k2);
+                    indices.push_back(k1 + 1);
+                }
+
+                if (i != (n_lats - 1)) {
+                    indices.push_back(k1 + 1);
+                    indices.push_back(k2);
+                    indices.push_back(k2 + 1);
+                }
+            }
+        }
+        add_vertex_buffer(
+            the_renderer->gen_buffer<sphere_vertex>(data,
+                                                    {
+                                                        {buffer_attribute_type::POSITION_3D, "position"},
+                                                        {buffer_attribute_type::NORMAL, "normal"},
+                                                        {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
+                                                    },
+                                                    buffer_access_type::STATIC));
+        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {}, buffer_access_type::STATIC));
     }
 
   private:

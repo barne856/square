@@ -211,16 +211,40 @@ void GLAPIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GL
                   << debug_severity_string(severity) << " - " << message << std::endl;
     }
 }
+void sdl_gl_renderer::init() {
+    SDL_Init(SDL_INIT_VIDEO); // Init SDL2, VIDEO also inits EVENTS
+    // Initialize PNG loading
+    int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
+    if (!(IMG_Init(imgFlags) & imgFlags)) {
+        throw std::runtime_error("SDL_image could not initialize! SDL_image Error: " + std::string(IMG_GetError()));
+    }
+}
+void sdl_gl_renderer::quit() {
+    IMG_Quit();
+    SDL_Quit();
+}
 void sdl_gl_renderer::create_context() {
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, properties.samples);
     auto window_flag = properties.fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE;
     window = SDL_CreateWindow(properties.window_title, 0, 0, properties.window_width, properties.window_height,
                               SDL_WINDOW_OPENGL | window_flag);
+
     window_id = SDL_GetWindowID(window);
     glcontext = SDL_GL_CreateContext(window);
     GLenum err = glewInit();
     if (GLEW_OK != err) {
         throw std::runtime_error("Error GLEW failed to initalize:\n" +
                                  std::string(reinterpret_cast<const char *>(glewGetErrorString(err))) + "\n");
+    }
+    if (properties.samples > 1) {
+        glEnable(GL_MULTISAMPLE);
     }
     if (properties.debug != debug_mode::OFF) {
         glEnable(GL_DEBUG_OUTPUT);
@@ -233,11 +257,6 @@ void sdl_gl_renderer::create_context() {
         }
     }
     set_cursor(properties.cursor);
-    // Initialize PNG loading
-    int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
-    if (!(IMG_Init(imgFlags) & imgFlags)) {
-        throw std::runtime_error("SDL_image could not initialize! SDL_image Error: " + std::string(IMG_GetError()));
-    }
 }
 void sdl_gl_renderer::poll_events() {
     std::vector<SDL_Event> unhandled_events{};
