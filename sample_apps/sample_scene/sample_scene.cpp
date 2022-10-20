@@ -55,8 +55,8 @@ template <typename T> class sample_scene_physics : public physics_system<T> {
         static time_f t = time_f::seconds(0);
         t += dt / 5.f;
         entity.set_position(
-            {3.0f * std::sin(t.as_seconds()), 3.0f * std::cos(t.as_seconds()), 2.0f * std::sin(t.as_seconds())});
-        entity.face_towards({0.f, 0.f, 0.f}, {0.f, 0.f, 1.f});
+            {3.0f * std::sin(t.as_seconds()), 3.0f * std::sin(t.as_seconds()), 3.0f * std::cos(t.as_seconds())});
+        entity.face_towards({0.f, 0.f, 0.f}, {0.f, 1.f, 0.f});
     }
 };
 template <typename T> class sample_scene_controls : public controls_system<T> {
@@ -80,7 +80,7 @@ class sample_scene_layer : public camera {
         attach_object(std::move(mat));
         set_position({3.0f, 0.5f, 0.0f});
         // set up direction to z axis
-        face_towards({0.f, 0.f, 0.f}, {0.f, 0.f, 1.f});
+        face_towards({0.f, 0.f, 0.f}, {0.f, 1.f, 0.f});
         gen_render_system<sample_scene_layer_renderer>();
         gen_physics_system<sample_scene_physics>();
         gen_controls_system<sample_scene_controls>();

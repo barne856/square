@@ -127,11 +127,11 @@ class sphere_mesh : public mesh {
                 squint::fvec3 position;
                 squint::fvec3 normal;
                 squint::fvec2 tex_coord;
-                position[0] = xy * cosf(lng);     /* x = r * cos(phi) * cos(theta)  */
-                position[1] = xy * sinf(lng);     /* y = r * cos(phi) * sin(theta) */
-                position[2] = z;                  /* z = r * sin(phi) */
-                tex_coord[0] = (float)j / n_lngs; /* s */
-                tex_coord[1] = (float)i / n_lats; /* t */
+                position[0] = xy * cosf(lng);            /* x = r * cos(phi) * cos(theta)  */
+                position[1] = xy * sinf(lng);            /* y = r * cos(phi) * sin(theta) */
+                position[2] = z;                         /* z = r * sin(phi) */
+                tex_coord[0] = 1.0f - (float)j / n_lngs; /* s */
+                tex_coord[1] = 1.0f - (float)i / n_lats; /* t */
                 // normalized vertex normal
                 normal = position / radius;
                 data.push_back({position, normal, tex_coord});
