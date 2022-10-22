@@ -38,10 +38,9 @@ void transform::set_transformation_matrix(squint::fmat4 transformation_matrix) {
 squint::fmat3 transform::get_normal_matrix() const {
     return squint::inv(transformation_matrix.at<3, 3>(0, 0)).transpose();
 }
-squint::fmat4 transform::get_view_matrix() const { return view_matrix; } // squint::inv(transformation_matrix); }
+squint::fmat4 transform::get_view_matrix() const { return squint::inv(transformation_matrix); }
 void transform::face_towards(squint::fvec3 point, squint::fvec3 up) {
     squint::fmat4 view = squint::look_at(get_position(), point, up);
-    view_matrix = view;
     transformation_matrix = squint::inv(view) * get_scale_matrix();
 }
 void transform::translate(squint::fvec3 offset) { transformation_matrix.at<3>(0, 3) += offset; }
