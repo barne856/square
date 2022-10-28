@@ -3,6 +3,7 @@
 #include "lit/components/mesh.hpp"
 
 namespace lit {
+// constructs a torus mesh from a given number of rings, segments on those rings, an inner radius and and outer radius
 class torus_mesh : public mesh {
     struct torus_vertex {
         squint::fvec3 position;
@@ -32,9 +33,6 @@ class torus_mesh : public mesh {
                 float x = cos(u) * (r + cos(v) * R);
                 float y = sin(u) * (r + cos(v) * R);
                 float z = sin(v) * R;
-                if (!std::isnormal(x)) {
-                    std::cout << x << std::endl;
-                }
                 // Normal vector
                 float nx = cos(u) * cos(v);
                 float ny = sin(u) * cos(v);
@@ -68,14 +66,6 @@ class torus_mesh : public mesh {
     unsigned int p; // number of mesh columns
     unsigned int q; // number of mesh row
     const float PI = 3.141592653f;
-
-    // Fuctions to map the grid vertex (u_i,v_j) to the mesh vertex (f(u_i,v_j),
-    // g(u_i,v_j), h(u_i,v_j)) on the torus.
-    float f(int i, int j) { return ((R + r * cos((-1 + 2 * (float)j / q) * PI)) * cos((-1 + 2 * (float)i / p) * PI)); }
-
-    float g(int i, int j) { return ((R + r * cos((-1 + 2 * (float)j / q) * PI)) * sin((-1 + 2 * (float)i / p) * PI)); }
-
-    float h(int i, int j) { return (r * sin((-1 + 2 * (float)j / q) * PI)); }
 };
 } // namespace lit
 #endif
