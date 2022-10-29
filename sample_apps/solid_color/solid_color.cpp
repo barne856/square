@@ -3,10 +3,10 @@
 // are combinations of red and green. Each window can be controlled separately
 // with the arrow keys.
 
-#include "lit/sdl_gl.hpp"
+#include "square/sdl_gl.hpp"
 #include <cmath>
 
-using namespace lit;
+using namespace square;
 using namespace squint;
 using namespace squint::quantities;
 

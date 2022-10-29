@@ -1,8 +1,8 @@
-#include "lit/components/transform.hpp"
+#include "square/components/transform.hpp"
 using namespace squint::quantities;
 using namespace squint;
 
-namespace lit {
+namespace square {
 transform::transform() : transformation_matrix(fmat4::I()) {}
 tensor<length_f, 3> transform::get_position() const { return transformation_matrix.at<3>(0, 3).copy_as<length_f>(); }
 fvec3 transform::get_scale() const {
@@ -72,4 +72,4 @@ fvec3 transform::get_up_vector() const {
     auto rotation_matrix = get_rotation_matrix();
     return rotation_matrix.at<3>(0, 1);
 }
-} // namespace lit
+} // namespace square

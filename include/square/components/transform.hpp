@@ -1,12 +1,12 @@
-#ifndef LIT_TRANSFORM
-#define LIT_TRANSFORM
+#ifndef SQUARE_TRANSFORM
+#define SQUARE_TRANSFORM
 
-#include "lit/entity.hpp"
+#include "square/entity.hpp"
 #include "squint/linalg.hpp"
 #include "squint/quantity.hpp"
 #include <concepts>
 
-namespace lit {
+namespace square {
 // This concept is used by templated systems (render, physics, and controls). All components should have a corresponding
 // concept so that derived entities can be used with systems for that component.
 template <typename T>
@@ -64,6 +64,6 @@ class transform {
     squint::fmat4 transformation_matrix;
 };
 
-} // namespace lit
+} // namespace square
 
 #endif

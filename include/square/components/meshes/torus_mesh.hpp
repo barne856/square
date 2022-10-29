@@ -1,8 +1,8 @@
-#ifndef LIT_TORUS_MESH
-#define LIT_TORUS_MESH
-#include "lit/components/mesh.hpp"
+#ifndef SQUARE_TORUS_MESH
+#define SQUARE_TORUS_MESH
+#include "square/components/mesh.hpp"
 
-namespace lit {
+namespace square {
 // constructs a torus mesh from a given number of rings, segments on those rings, an inner radius and and outer radius
 class torus_mesh : public mesh {
     struct torus_vertex {
@@ -67,5 +67,5 @@ class torus_mesh : public mesh {
     unsigned int q; // number of mesh row
     const float PI = 3.141592653f;
 };
-} // namespace lit
+} // namespace square
 #endif

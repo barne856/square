@@ -1,9 +1,9 @@
-#ifndef LIT_BASIC_TEXTURE
-#define LIT_BASIC_TEXTURE
+#ifndef SQUARE_BASIC_TEXTURE
+#define SQUARE_BASIC_TEXTURE
 
-#include "lit/entities/material.hpp"
+#include "square/entities/material.hpp"
 
-namespace lit {
+namespace square {
 // Vertex shader inputs:
 // in vec4 position;        // raw mesh model vertices
 // in vec2 tex_coords;      // texture coordinates
@@ -16,5 +16,5 @@ class basic_texture : public material {
     basic_texture(camera *cam) : material(cam, "../shaders/basic_texture") {}
     void set_texture(texture2D *tex) { get_shader()->upload_texture2D("tex", tex); }
 };
-} // namespace lit
+} // namespace square
 #endif

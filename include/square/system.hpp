@@ -1,7 +1,7 @@
-#ifndef LIT_SYSTEM
-#define LIT_SYSTEM
+#ifndef SQUARE_SYSTEM
+#define SQUARE_SYSTEM
 #include <squint/quantity.hpp>
-namespace lit {
+namespace square {
 
 // event callback types
 struct mouse_scroll_event {
@@ -263,5 +263,5 @@ template <typename T> class controls_system {
     virtual ~controls_system() {}
 };
 
-} // namespace lit
+} // namespace square
 #endif

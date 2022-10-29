@@ -1,11 +1,11 @@
-#ifndef LIT_RENDERER
-#define LIT_RENDERER
-#include "lit/entity.hpp"
+#ifndef SQUARE_RENDERER
+#define SQUARE_RENDERER
+#include "square/entity.hpp"
 #include <cstring>
 #include <filesystem>
 #include <memory>
 
-namespace lit {
+namespace square {
 enum class cursor_type {
     DISABLED, // cursor will not be shown and only relative positions are returned from event callbacks
     ENABLED,  // cursor will be shown
@@ -385,5 +385,5 @@ class vertex_input_assembly {
     std::unique_ptr<buffer> index_buffer;
     index_type type;
 };
-} // namespace lit
+} // namespace square
 #endif

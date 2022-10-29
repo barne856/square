@@ -1,9 +1,9 @@
-#ifndef LIT_BASIC_TEXTURE
-#define LIT_BASIC_TEXTURE
+#ifndef SQUARE_BASIC_TEXTURE
+#define SQUARE_BASIC_TEXTURE
 
-#include "lit/entities/material.hpp"
+#include "square/entities/material.hpp"
 
-namespace lit {
+namespace square {
 // Vertex shader inputs:
 // in vec4 position;        // raw mesh model vertices
 // uniform mat4 projection; // camera projection
@@ -15,5 +15,5 @@ class basic_color : public material {
     basic_color(camera *cam) : material(cam, "../shaders/basic_color") {}
     void set_color(const squint::fvec4 &color) { get_shader()->upload_vec4("u_color", color); }
 };
-} // namespace lit
+} // namespace square
 #endif

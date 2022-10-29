@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 ## Project Settings
-project(LIT)
+project(square)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 INCLUDE(FindPkgConfig)
@@ -30,15 +30,15 @@ src/renderer.cpp
 src/sdl_gl.cpp
 src/components/transform.cpp
 )
-add_library(LIT ${LIB_SRC})
-target_link_libraries(LIT ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW)
+add_library(square ${LIB_SRC})
+target_link_libraries(square ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW)
 
 ## Build Sample Apps
 add_executable(solid_color sample_apps/solid_color/solid_color.cpp)
-target_link_libraries(solid_color LIT)
+target_link_libraries(solid_color square)
 
 add_executable(sample_scene sample_apps/sample_scene/sample_scene.cpp)
-target_link_libraries(sample_scene LIT)
+target_link_libraries(sample_scene square)
 
 ## Include Catch2 for Unit Tests
 Include(FetchContent)

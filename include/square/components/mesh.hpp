@@ -1,10 +1,10 @@
-#ifndef LIT_MESH
-#define LIT_MESH
-#include "lit/components/transform.hpp"
-#include "lit/entity.hpp"
-#include "lit/renderer.hpp"
+#ifndef SQUARE_MESH
+#define SQUARE_MESH
+#include "square/components/transform.hpp"
+#include "square/entity.hpp"
+#include "square/renderer.hpp"
 
-namespace lit {
+namespace square {
 // A mesh contains a transform (or model matrix) along with a vertex buffer and possibly an index buffer. The
 // vertex buffer must be compatible with any shader bound to the mesh in order to be rendered successfully. This means
 // that any inputs to the vertex shader should be available as buffer attributes in the vertex buffer.
@@ -35,5 +35,5 @@ class mesh : public transform {
     draw_method method;
 };
 
-} // namespace lit
+} // namespace square
 #endif

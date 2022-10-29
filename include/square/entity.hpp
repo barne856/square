@@ -1,11 +1,11 @@
-#ifndef LIT_ENTITY
-#define LIT_ENTITY
-#include "lit/system.hpp"
+#ifndef SQUARE_ENTITY
+#define SQUARE_ENTITY
+#include "square/system.hpp"
 #include <algorithm>
 #include <memory>
 #include <vector>
 
-namespace lit {
+namespace square {
 // Abstract base class for objects in a renderer.
 //
 // Objects can have any number of child objects and up to one parent object. Typically the renderer is the root
@@ -147,5 +147,5 @@ template <typename T> class entity : public object {
     std::vector<std::unique_ptr<physics_system<T>>> physics_systems{};
     std::vector<std::unique_ptr<render_system<T>>> render_systems{};
 };
-} // namespace lit
+} // namespace square
 #endif

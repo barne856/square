@@ -1,12 +1,12 @@
-#ifndef LIT_MATERIAL
-#define LIT_MATERIAL
+#ifndef SQUARE_MATERIAL
+#define SQUARE_MATERIAL
 
-#include "lit/entities/camera.hpp"
-#include "lit/entity.hpp"
-#include "lit/renderer.hpp"
-#include "lit/system.hpp"
+#include "square/entities/camera.hpp"
+#include "square/entity.hpp"
+#include "square/renderer.hpp"
+#include "square/system.hpp"
 
-namespace lit {
+namespace square {
 // concept for templated systems
 template <typename T>
 concept material_like = requires(T t) {
@@ -52,5 +52,5 @@ class material : public entity<material> {
     const camera *cam;
     std::unique_ptr<shader> material_shader;
 };
-} // namespace lit
+} // namespace square
 #endif

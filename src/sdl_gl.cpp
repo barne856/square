@@ -1,7 +1,7 @@
-#include "lit/sdl_gl.hpp"
-#include "lit/components/mesh.hpp"
+#include "square/sdl_gl.hpp"
+#include "square/components/mesh.hpp"
 #include <fstream>
-namespace lit {
+namespace square {
 // Debug functions
 std::string debug_source_string(GLenum source) {
     switch (source) {
@@ -1142,7 +1142,7 @@ GLuint sdl_gl_shader::create_program(const std::filesystem::path &shader_src_fol
     shaders.clear();
     return program;
 }
-void sdl_gl_shader::upload_mat4(const std::string &name, const squint::fmat4& value, bool suppress_warnings) {
+void sdl_gl_shader::upload_mat4(const std::string &name, const squint::fmat4 &value, bool suppress_warnings) {
     if (!resource_location_cache.count(name)) {
         // cache the location
         resource_location_cache.insert_or_assign(name, glGetProgramResourceLocation(program, GL_UNIFORM, name.c_str()));
@@ -1153,7 +1153,7 @@ void sdl_gl_shader::upload_mat4(const std::string &name, const squint::fmat4& va
         glUniformMatrix4fv(resource_location_cache[name], 1, GL_FALSE, value.data());
     }
 }
-void sdl_gl_shader::upload_vec4(const std::string &name, const squint::fvec4& value, bool suppress_warnings) {
+void sdl_gl_shader::upload_vec4(const std::string &name, const squint::fvec4 &value, bool suppress_warnings) {
     if (!resource_location_cache.count(name)) {
         // cache the location
         resource_location_cache.insert_or_assign(name, glGetProgramResourceLocation(program, GL_UNIFORM, name.c_str()));
@@ -1215,4 +1215,4 @@ sdl_gl_texture2D::sdl_gl_texture2D(const std::filesystem::path &image_filepath) 
     glTextureSubImage2D(texture_id, 0, 0, 0, width, height, gl_tex_format(type), gl_tex_type(type), nullptr);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
-} // namespace lit
+} // namespace square

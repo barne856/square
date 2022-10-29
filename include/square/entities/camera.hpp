@@ -1,12 +1,12 @@
-#ifndef LIT_CAMERA
-#define LIT_CAMERA
+#ifndef SQUARE_CAMERA
+#define SQUARE_CAMERA
 
-#include "lit/components/transform.hpp"
-#include "lit/entity.hpp"
-#include "lit/renderer.hpp"
+#include "square/components/transform.hpp"
+#include "square/entity.hpp"
+#include "square/renderer.hpp"
 #include <concepts>
 
-namespace lit {
+namespace square {
 enum class projection_type { PERSPECTIVE, ORTHOGRAPHIC };
 // concept for templated systems
 template <typename T>
@@ -100,5 +100,5 @@ class camera : public entity<camera>, public transform {
     float persp_near = 0.1f;
     float persp_far = 10.0f;
 };
-} // namespace lit
+} // namespace square
 #endif

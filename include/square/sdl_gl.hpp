@@ -1,13 +1,13 @@
 #ifndef SDL_GL_RENDERER
 #define SDL_GL_RENDERER
-#include "lit/renderer.hpp"
+#include "square/renderer.hpp"
 #include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <cstring>
 #include <unordered_map>
 
-namespace lit {
+namespace square {
 
 class sdl_gl_renderer : public renderer {
 
@@ -159,6 +159,6 @@ class sdl_gl_vertex_input_assembly : public vertex_input_assembly {
   private:
     GLuint vao;
 };
-} // namespace lit
+} // namespace square
 
 #endif

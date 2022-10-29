@@ -1,8 +1,8 @@
-#ifndef LIT_SPHERE_MESH
-#define LIT_SPHERE_MESH
-#include "lit/components/mesh.hpp"
+#ifndef SQUARE_SPHERE_MESH
+#define SQUARE_SPHERE_MESH
+#include "square/components/mesh.hpp"
 
-namespace lit {
+namespace square {
 
 // constructs a sphere mesh from either a lat-long grid or a tessellated icosahedron
 class sphere_mesh : public mesh {
@@ -204,5 +204,5 @@ class sphere_mesh : public mesh {
         subdivide(v12, v23, v31, depth - 1, vertices, index);
     }
 };
-} // namespace lit
+} // namespace square
 #endif

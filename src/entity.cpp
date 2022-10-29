@@ -1,6 +1,6 @@
-#include "lit/entity.hpp"
+#include "square/entity.hpp"
 
-namespace lit {
+namespace square {
 object::object() : parent_object(nullptr) {}
 void object::on_load() {
     on_enter();
@@ -47,4 +47,4 @@ bool object::on_resize(const window_resize_event &event) {
                        [&event](auto &obj) { return obj->on_resize(event); });
 }
 object::~object() {}
-} // namespace lit
+} // namespace square

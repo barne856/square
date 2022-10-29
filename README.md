@@ -1,4 +1,4 @@
-# LIT - Layer Iterator Rendering Engine (name may change) (Maybe Firefly?)
+# Square - A Rendering Engine built for SQUINT
 
 ```mermaid
 classDiagram
@@ -104,17 +104,3 @@ classDiagram
       run()
     }
 ```
-
-Components:
-
-- meshes
-- sounds
-- materials
-- transform
-- camera
-
-Components can have just references to the same data
-
-camera as component for scene
-
-2. camera component, add renderable entities to render system attached to scene

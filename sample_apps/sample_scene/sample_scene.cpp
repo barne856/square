@@ -1,13 +1,13 @@
 // A sample app showing a torus with a checkerboard texture where a perspective projection camera orbits the mesh.
 // Pressing the 'T' key will toggle wireframe mode
 
-#include "lit/components/meshes/sphere_mesh.hpp"
-#include "lit/components/meshes/torus_mesh.hpp"
-#include "lit/entities/camera.hpp"
-#include "lit/entities/materials/basic_texture.hpp"
-#include "lit/sdl_gl.hpp"
+#include "square/components/meshes/sphere_mesh.hpp"
+#include "square/components/meshes/torus_mesh.hpp"
+#include "square/entities/camera.hpp"
+#include "square/entities/materials/basic_texture.hpp"
+#include "square/sdl_gl.hpp"
 
-using namespace lit;
+using namespace square;
 using namespace squint;
 using namespace squint::quantities;
 // SAMPLE OBJECT -------------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
-#include "lit/renderer.hpp"
+#include "square/renderer.hpp"
 #include <chrono>
 
-namespace lit {
+namespace square {
 
 void renderer::run_step() {
     if (active_object) {
@@ -34,4 +34,4 @@ void renderer::load_object(object *obj) {
     }
 }
 
-} // namespace lit
+} // namespace square

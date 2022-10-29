@@ -1,9 +1,9 @@
-#ifndef LIT_SQUARE_MESH
-#define LIT_SQUARE_MESH
-#include "lit/components/mesh.hpp"
+#ifndef SQUARE_SQUARE_MESH
+#define SQUARE_SQUARE_MESH
+#include "square/components/mesh.hpp"
 #include "squint/quantity.hpp"
 
-namespace lit {
+namespace square {
 // constructs a square mesh. Scale the mesh's transform to produce a general rectilinear quadtrangle
 class square_mesh : public mesh {
     struct quad_vertex {
@@ -50,5 +50,5 @@ class square_mesh : public mesh {
         set_index_buffer(the_renderer->gen_buffer<uint8_t>(indices, {}, buffer_access_type::STATIC));
     }
 };
-} // namespace lit
+} // namespace square
 #endif
