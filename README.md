@@ -172,7 +172,7 @@ int main() {
 }
 ```
 
-In order to render anything, we need a scene. this is the `solid_color_layer` in the above example. This can be done by creating a new class that inheritys from the `entity` class using the curiously recurring template pattern (CTRP).
+In order to render anything, we need a scene. This is what the `solid_color_layer` in the above example is. This can be done by creating a new class that inherits from the `entity` class using the curiously recurring template pattern (CTRP).
 
 ```cpp
 // create the layer that contains the colors and attach to it the systems
