@@ -256,6 +256,7 @@ There are some included assets which are internally documented:
 
 ## Included Meshes
 * square_mesh
+* circle_mesh
 * sphere_mesh
 * torus_mesh
 
