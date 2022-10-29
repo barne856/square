@@ -1011,6 +1011,9 @@ void sdl_gl_renderer::enable_blending(bool enable) {
 std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::filesystem::path &shader_src_directory) {
     return std::make_unique<sdl_gl_shader>(shader_src_directory);
 }
+std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::vector<shader_src> &shader_sources) {
+    return std::make_unique<sdl_gl_shader>(shader_sources);
+}
 std::unique_ptr<buffer> sdl_gl_renderer::gen_buffer(const void *data, const size_t size_in_bytes,
                                                     const size_t num_elements, const buffer_format &format,
                                                     const buffer_access_type type) {
@@ -1050,20 +1053,27 @@ void sdl_gl_renderer::set_cursor(cursor_type type) {
     }
 }
 sdl_gl_shader::sdl_gl_shader(const std::filesystem::path &shader_src_folder) {
-    program = create_program(shader_src_folder);
+    std::vector<shader_src> sources{};
+    for (const auto &src_file : std::filesystem::directory_iterator(shader_src_folder)) {
+        sources.push_back(read_shader(src_file));
+    }
+    program = create_program(sources);
+}
+sdl_gl_shader::sdl_gl_shader(const std::vector<shader_src> &shader_sources) {
+    program = create_program(shader_sources);
 }
 sdl_gl_shader::~sdl_gl_shader() {
     glDeleteProgram(program); // Silently ignored if program is 0
 }
 void sdl_gl_shader::activate() { glUseProgram(program); }
-sdl_gl_shader::shader_source sdl_gl_shader::read_shader(const std::filesystem::path &shader_src_filepath) {
-    shader_source src{};
-    src.shader_type = shader_ext_type.at(shader_src_filepath.extension().string());
+shader_src sdl_gl_shader::read_shader(const std::filesystem::path &shader_src_filepath) {
+    shader_src src{};
+    src.type = shader_ext_type.at(shader_src_filepath.extension().string());
     std::ifstream s_file{shader_src_filepath};
     if (s_file.is_open()) {
         std::string line;
         while (std::getline(s_file, line)) {
-            src.source += (line + '\n');
+            src.src += (line + '\n');
         }
         s_file.close();
     } else {
@@ -1071,10 +1081,9 @@ sdl_gl_shader::shader_source sdl_gl_shader::read_shader(const std::filesystem::p
     }
     return src;
 }
-GLuint sdl_gl_shader::compile_shader(const std::filesystem::path &shader_src_filepath) {
-    const auto shader_src = read_shader(shader_src_filepath);
-    const GLchar *src{shader_src.source.c_str()};
-    GLuint shader = glCreateShader(shader_src.shader_type);
+GLuint sdl_gl_shader::compile_shader(const shader_src &source) {
+    const GLchar *src{source.src.c_str()};
+    GLuint shader = glCreateShader(shader_gl_type.at(source.type));
     glShaderSource(shader, 1, &src, nullptr);
     glCompileShader(shader);
 
@@ -1089,7 +1098,7 @@ GLuint sdl_gl_shader::compile_shader(const std::filesystem::path &shader_src_fil
         glGetShaderInfoLog(shader, maxLength, &maxLength, &error_log[0]);
 
         std::stringstream ss{};
-        ss << shader_src_filepath << " SHADER FAILED TO COMPILE:\n";
+        ss << "SHADER FAILED TO COMPILE:\n";
         for (auto &c : error_log) {
             ss << c;
         }
@@ -1099,10 +1108,10 @@ GLuint sdl_gl_shader::compile_shader(const std::filesystem::path &shader_src_fil
     }
     return shader;
 }
-GLuint sdl_gl_shader::create_program(const std::filesystem::path &shader_src_folder) {
+GLuint sdl_gl_shader::create_program(const std::vector<shader_src> &sources) {
     std::vector<GLuint> shaders;
-    for (const auto &src_file : std::filesystem::directory_iterator(shader_src_folder)) {
-        shaders.push_back(compile_shader(src_file));
+    for (const auto &src : sources) {
+        shaders.push_back(compile_shader(src));
     }
 
     GLuint new_program = glCreateProgram();

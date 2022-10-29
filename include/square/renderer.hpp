@@ -100,6 +100,18 @@ enum class texture_type {
                 point numbers. And used to create textures of the depth values from a
                 framebuffer.*/
 };
+enum class shader_type {
+    VERTEX_SHADER,
+    TESS_CONTROL_SHADER,
+    TESS_EVALUATION_SHADER,
+    GEOMETRY_SHADER,
+    FRAGMENT_SHADER,
+    COMPUTE_SHADER,
+};
+struct shader_src {
+    shader_type type;
+    std::string src;
+};
 // describes an attribute in a vertex buffer to corresponds to an input of a vertex shader
 class buffer_attribute {
   public:
@@ -110,7 +122,7 @@ class buffer_attribute {
     //
     // the attrib_name is the name of the attribute used link the data in the buffer to a resource in the shader. This
     // must match the name of the resourse in the shader exactly.
-    buffer_attribute(buffer_attribute_type attrib_type, const std::string& attrib_name)
+    buffer_attribute(buffer_attribute_type attrib_type, const std::string &attrib_name)
         : type(attrib_type), name(attrib_name), offset(0), size(0) {}
     ~buffer_attribute(){};
     // Returns the number of components (or dimensions) in an attribute. The number of components is returned according
@@ -212,6 +224,7 @@ class renderer : public object {
     virtual void enable_depth_testing(bool enable) = 0;
     virtual void enable_blending(bool enable) = 0;
     virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) = 0;
+    virtual std::unique_ptr<shader> gen_shader(const std::vector<shader_src>& shader_sources) = 0;
     inline const renderer_properties &get_properties() const { return properties; }
     template <typename T>
     std::unique_ptr<buffer> gen_buffer(const std::vector<T> &data, const buffer_format &format,

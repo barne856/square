@@ -12,8 +12,33 @@ namespace square {
 // uniform vec4 u_color;
 class basic_color : public material {
   public:
-    basic_color(camera *cam) : material(cam, "../shaders/basic_color") {}
+    basic_color(camera *cam) : material(cam) {}
     void set_color(const squint::fvec4 &color) { get_shader()->upload_vec4("u_color", color); }
+    void on_enter() override {
+        // we need to construct the shader here since we need the rendering API to be loaded first
+        // material_shader = std::move(app::instance().active_renderer()->gen_shader("../shaders/basic_color"));
+        material_shader = std::move(app::instance().active_renderer()->gen_shader({{shader_type::VERTEX_SHADER,
+                                                                                    R"(
+#version 450
+
+in vec4 position;        // raw mesh model vertices
+uniform mat4 projection; // camera projection
+uniform mat4 view;       // inverse camera transform
+uniform mat4 model;      // mesh transform
+
+void main() {
+            gl_Position = projection * view * model * position; }
+          )"},
+                                                                                   {shader_type::FRAGMENT_SHADER,
+                                                                                    R"(
+#version 450
+
+out vec4 color;
+uniform vec4 u_color;
+
+void main() { color = u_color; }
+      )"}}));
+    }
 };
 } // namespace square
 #endif

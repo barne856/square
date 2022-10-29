@@ -21,6 +21,7 @@ class sdl_gl_renderer : public renderer {
     virtual void enable_depth_testing(bool enable) override final;
     virtual void enable_blending(bool enable) override final;
     virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) override final;
+    virtual std::unique_ptr<shader> gen_shader(const std::vector<shader_src> &shader_sources) override final;
     virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes, const size_t num_elements,
                                                const buffer_format &format,
                                                const buffer_access_type type) override final;
@@ -52,6 +53,7 @@ class sdl_gl_shader : public shader {
   public:
     virtual void activate() override final;
     sdl_gl_shader(const std::filesystem::path &shader_src_folder);
+    sdl_gl_shader(const std::vector<shader_src> &shader_sources);
     virtual ~sdl_gl_shader();
     virtual void upload_mat4(const std::string &name, const squint::fmat4 &value,
                              bool suppress_warnings = false) override final;
@@ -62,16 +64,20 @@ class sdl_gl_shader : public shader {
     virtual uint32_t get_id() override final;
 
   private:
-    inline static const std::unordered_map<std::string, GLenum> shader_ext_type{
-        {".vert", GL_VERTEX_SHADER},   {".tesc", GL_TESS_CONTROL_SHADER}, {".tese", GL_TESS_EVALUATION_SHADER},
-        {".geom", GL_GEOMETRY_SHADER}, {".frag", GL_FRAGMENT_SHADER},     {".comp", GL_COMPUTE_SHADER}};
-    struct shader_source {
-        std::string source;
-        GLenum shader_type;
-    };
-    static shader_source read_shader(const std::filesystem::path &shader_src_filepath);
-    GLuint compile_shader(const std::filesystem::path &shader_src_filepath);
-    GLuint create_program(const std::filesystem::path &shader_src_folder);
+    inline static const std::unordered_map<std::string, shader_type> shader_ext_type{
+        {".vert", shader_type::VERTEX_SHADER},          {".tesc", shader_type::TESS_CONTROL_SHADER},
+        {".tese", shader_type::TESS_EVALUATION_SHADER}, {".geom", shader_type::GEOMETRY_SHADER},
+        {".frag", shader_type::FRAGMENT_SHADER},        {".comp", shader_type::COMPUTE_SHADER}};
+    inline static const std::unordered_map<shader_type, GLenum> shader_gl_type{
+        {shader_type::VERTEX_SHADER, GL_VERTEX_SHADER},
+        {shader_type::TESS_CONTROL_SHADER, GL_TESS_CONTROL_SHADER},
+        {shader_type::TESS_EVALUATION_SHADER, GL_TESS_EVALUATION_SHADER},
+        {shader_type::GEOMETRY_SHADER, GL_GEOMETRY_SHADER},
+        {shader_type::FRAGMENT_SHADER, GL_FRAGMENT_SHADER},
+        {shader_type::COMPUTE_SHADER, GL_COMPUTE_SHADER}};
+    static shader_src read_shader(const std::filesystem::path &shader_src_filepath);
+    GLuint compile_shader(const shader_src &source);
+    GLuint create_program(const std::vector<shader_src> &sources);
     GLuint program;
     std::unordered_map<std::string, GLint> resource_location_cache;
     std::unordered_map<std::string, GLint> texture_binding_cache;

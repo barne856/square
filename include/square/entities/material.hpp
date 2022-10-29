@@ -30,15 +30,7 @@ template <material_like T> class material_render_system : public render_system<T
 // A material is an entitiy containing child entities that should be rendered with the same material.
 class material : public entity<material> {
   public:
-    material(const camera *cam, const std::string &shader_src_directory)
-        : cam(cam), shader_src_directory(shader_src_directory) {
-        gen_render_system<material_render_system>();
-    }
-    void on_enter() override {
-        // we need to construct the shader here since we need the rendering API to be loaded first
-        material_shader = std::move(app::instance().active_renderer()->gen_shader(shader_src_directory.c_str()));
-    }
-    void on_exit() override {}
+    material(const camera *cam) : cam(cam) { gen_render_system<material_render_system>(); }
     inline shader *get_shader() { return material_shader.get(); }
     inline const camera *get_camera() const { return cam; }
     void set_model(const transform *model) {
@@ -47,8 +39,7 @@ class material : public entity<material> {
         }
     }
 
-  private:
-    std::string shader_src_directory;
+  protected:
     const camera *cam;
     std::unique_ptr<shader> material_shader;
 };
