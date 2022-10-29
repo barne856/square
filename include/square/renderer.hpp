@@ -110,7 +110,7 @@ class buffer_attribute {
     //
     // the attrib_name is the name of the attribute used link the data in the buffer to a resource in the shader. This
     // must match the name of the resourse in the shader exactly.
-    buffer_attribute(buffer_attribute_type attrib_type, std::string attrib_name)
+    buffer_attribute(buffer_attribute_type attrib_type, const std::string& attrib_name)
         : type(attrib_type), name(attrib_name), offset(0), size(0) {}
     ~buffer_attribute(){};
     // Returns the number of components (or dimensions) in an attribute. The number of components is returned according

@@ -1023,13 +1023,16 @@ std::unique_ptr<vertex_input_assembly> sdl_gl_renderer::gen_vertex_input_assembl
     return std::make_unique<sdl_gl_vertex_input_assembly>(type);
 }
 void sdl_gl_renderer::draw_mesh(mesh *m, draw_method method) {
-    const auto &input_assembly = m->get_input_assembly();
-    input_assembly->activate();
-    if (input_assembly->get_index_buffer()) {
-        glDrawElements(gl_draw_method(method), static_cast<GLsizei>(input_assembly->get_index_buffer()->size()),
-                       gl_index_type(input_assembly->get_index_type()), nullptr);
-    } else {
-        glDrawArrays(gl_draw_method(method), 0, static_cast<GLsizei>(input_assembly->get_vertex_buffers()[0]->size()));
+    const vertex_input_assembly *input_assembly = m->get_input_assembly();
+    if (input_assembly) {
+        input_assembly->activate();
+        if (input_assembly->get_index_buffer()) {
+            glDrawElements(gl_draw_method(method), static_cast<GLsizei>(input_assembly->get_index_buffer()->size()),
+                           gl_index_type(input_assembly->get_index_type()), nullptr);
+        } else {
+            glDrawArrays(gl_draw_method(method), 0,
+                         static_cast<GLsizei>(input_assembly->get_vertex_buffers()[0]->size()));
+        }
     }
 }
 void sdl_gl_renderer::set_viewport(size_t x, size_t y, size_t width, size_t height) { glViewport(x, y, width, height); }
@@ -1102,24 +1105,24 @@ GLuint sdl_gl_shader::create_program(const std::filesystem::path &shader_src_fol
         shaders.push_back(compile_shader(src_file));
     }
 
-    GLuint program = glCreateProgram();
+    GLuint new_program = glCreateProgram();
     for (auto s : shaders) {
-        glAttachShader(program, s);
+        glAttachShader(new_program, s);
     }
-    glLinkProgram(program);
+    glLinkProgram(new_program);
 
     GLint isLinked = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, (int *)&isLinked);
+    glGetProgramiv(new_program, GL_LINK_STATUS, (int *)&isLinked);
     if (isLinked == GL_FALSE) {
         GLint maxLength = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+        glGetProgramiv(new_program, GL_INFO_LOG_LENGTH, &maxLength);
 
         // The maxLength includes the NULL character
         std::vector<GLchar> infoLog(maxLength);
-        glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+        glGetProgramInfoLog(new_program, maxLength, &maxLength, &infoLog[0]);
 
         // We don't need the program anymore.
-        glDeleteProgram(program);
+        glDeleteProgram(new_program);
         for (auto s : shaders) {
             glDeleteShader(s);
         }
@@ -1136,11 +1139,11 @@ GLuint sdl_gl_shader::create_program(const std::filesystem::path &shader_src_fol
 
     // Always detach shaders after a successful link.
     for (auto s : shaders) {
-        glDetachShader(program, s);
+        glDetachShader(new_program, s);
         glDeleteShader(s);
     }
     shaders.clear();
-    return program;
+    return new_program;
 }
 void sdl_gl_shader::upload_mat4(const std::string &name, const squint::fmat4 &value, bool suppress_warnings) {
     if (!resource_location_cache.count(name)) {
@@ -1198,21 +1201,21 @@ sdl_gl_texture2D::sdl_gl_texture2D(const std::filesystem::path &image_filepath) 
     glCreateTextures(GL_TEXTURE_2D, 1, &texture_id);
     switch (channels) {
     case 1:
-        type = texture_type::R8;
+        tex_type = texture_type::R8;
         break;
     case 2:
-        type = texture_type::RG8;
+        tex_type = texture_type::RG8;
         break;
     case 3:
-        type = texture_type::RGB8;
+        tex_type = texture_type::RGB8;
         break;
     case 4:
-        type = texture_type::RGBA8;
+        tex_type = texture_type::RGBA8;
         break;
     }
-    glTextureStorage2D(texture_id, 1, gl_sized_tex_format(type), width, height);
+    glTextureStorage2D(texture_id, 1, gl_sized_tex_format(tex_type), width, height);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer_id);
-    glTextureSubImage2D(texture_id, 0, 0, 0, width, height, gl_tex_format(type), gl_tex_type(type), nullptr);
+    glTextureSubImage2D(texture_id, 0, 0, 0, width, height, gl_tex_format(tex_type), gl_tex_type(tex_type), nullptr);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 } // namespace square

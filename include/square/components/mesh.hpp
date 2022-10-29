@@ -14,9 +14,8 @@ class mesh : public transform {
   public:
     // construct a mesh of a certain draw_method and index_type. A vertex_input_assembly is used to manage the state of
     // the vertex inputs to a bound shader.
-    mesh(draw_method method, index_type type = index_type::NONE) : method(method) {
-        input_assembly = app::instance().active_renderer()->gen_vertex_input_assembly(type);
-    }
+    mesh(draw_method method, index_type type = index_type::NONE)
+        : method(method), input_assembly(app::instance().active_renderer()->gen_vertex_input_assembly(type)) {}
     // once a shader is bound, the input assembly is updated to bind the vertex attribs to the shader inputs.
     // The bound shader must be activated before draw() is called.
     void bind_shader(shader *s) { input_assembly->bind_shader(s); }

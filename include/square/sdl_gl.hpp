@@ -43,9 +43,9 @@ class sdl_gl_renderer : public renderer {
     using renderer::on_resize;
     using renderer::render;
     using renderer::update;
-    SDL_GLContext glcontext;
-    SDL_Window *window;
-    unsigned int window_id;
+    SDL_GLContext glcontext = nullptr;
+    SDL_Window *window = nullptr;
+    unsigned int window_id = 0;
 };
 class sdl_gl_shader : public shader {
 
@@ -124,7 +124,7 @@ class sdl_gl_texture2D : public texture2D {
   private:
     GLuint buffer_id;
     GLuint texture_id;
-    texture_type type;
+    texture_type tex_type;
     int width;
     int height;
 };

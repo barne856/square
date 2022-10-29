@@ -30,7 +30,7 @@ template <material_like T> class material_render_system : public render_system<T
 // A material is an entitiy containing child entities that should be rendered with the same material.
 class material : public entity<material> {
   public:
-    material(const camera *cam, std::string shader_src_directory)
+    material(const camera *cam, const std::string &shader_src_directory)
         : cam(cam), shader_src_directory(shader_src_directory) {
         gen_render_system<material_render_system>();
     }
