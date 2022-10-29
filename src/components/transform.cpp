@@ -30,7 +30,6 @@ fmat4 transform::get_rotation_matrix() const {
     return rotation;
 }
 fmat4 transform::get_scale_matrix() const { return scale(fmat4::I(), get_scale()); }
-fmat4 transform::get_transformation_matrix() const { return transformation_matrix; }
 void transform::set_transformation_matrix(const fmat4 &transformation_matrix) {
     this->transformation_matrix = transformation_matrix;
 }

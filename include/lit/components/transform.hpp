@@ -16,7 +16,7 @@ concept transformable = requires(T t) {
     { t.get_translation_matrix() } -> std::same_as<squint::fmat4>;
     { t.get_rotation_matrix() } -> std::same_as<squint::fmat4>;
     { t.get_scale_matrix() } -> std::same_as<squint::fmat4>;
-    { t.get_transformation_matrix() } -> std::same_as<squint::fmat4>;
+    { t.get_transformation_matrix() } -> std::same_as<const squint::fmat4 &>;
     { t.get_normal_matrix() } -> std::same_as<squint::fmat3>;
     { t.get_view_matrix() } -> std::same_as<squint::fmat4>;
     { t.face_towards(squint::tensor<squint::quantities::length_f, 3>(), squint::fvec3()) } -> std::same_as<void>;
@@ -34,6 +34,9 @@ concept transformable = requires(T t) {
 // A transform component provides the data and functions to transform an entity in space. The transform consists of a
 // single fmat4 variable that is a TRS matrix or Translation * Rotation * Scale matrix. This means that the order of
 // transformations applied is Scale then Rotate then Translate.
+//
+// Technically this matrix would have mixed dimension with the fourth column having dimension of length and the
+// remaining columns being dimensionless, but internally it is stored as a dimensionless matrix.
 class transform {
   public:
     transform();
@@ -42,7 +45,7 @@ class transform {
     squint::fmat4 get_translation_matrix() const;
     squint::fmat4 get_rotation_matrix() const;
     squint::fmat4 get_scale_matrix() const;
-    squint::fmat4 get_transformation_matrix() const;
+    inline const squint::fmat4 &get_transformation_matrix() const { return transformation_matrix; };
     void set_transformation_matrix(const squint::fmat4 &transformation_matrix);
     squint::fmat3 get_normal_matrix() const;
     squint::fmat4 get_view_matrix() const;

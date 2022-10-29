@@ -2,7 +2,6 @@
 #define LIT_SQUARE_MESH
 #include "lit/components/mesh.hpp"
 #include "squint/quantity.hpp"
-using namespace squint::quantities;
 
 namespace lit {
 // constructs a square mesh. Scale the mesh's transform to produce a general rectilinear quadtrangle

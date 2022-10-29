@@ -1142,7 +1142,7 @@ GLuint sdl_gl_shader::create_program(const std::filesystem::path &shader_src_fol
     shaders.clear();
     return program;
 }
-void sdl_gl_shader::upload_mat4(const std::string &name, squint::fmat4 value, bool suppress_warnings) {
+void sdl_gl_shader::upload_mat4(const std::string &name, const squint::fmat4& value, bool suppress_warnings) {
     if (!resource_location_cache.count(name)) {
         // cache the location
         resource_location_cache.insert_or_assign(name, glGetProgramResourceLocation(program, GL_UNIFORM, name.c_str()));
@@ -1153,7 +1153,7 @@ void sdl_gl_shader::upload_mat4(const std::string &name, squint::fmat4 value, bo
         glUniformMatrix4fv(resource_location_cache[name], 1, GL_FALSE, value.data());
     }
 }
-void sdl_gl_shader::upload_vec4(const std::string &name, squint::fvec4 value, bool suppress_warnings) {
+void sdl_gl_shader::upload_vec4(const std::string &name, const squint::fvec4& value, bool suppress_warnings) {
     if (!resource_location_cache.count(name)) {
         // cache the location
         resource_location_cache.insert_or_assign(name, glGetProgramResourceLocation(program, GL_UNIFORM, name.c_str()));

@@ -340,8 +340,8 @@ class shader {
   public:
     virtual void activate() = 0;
     virtual ~shader() {}
-    virtual void upload_mat4(const std::string &name, squint::fmat4 value, bool suppress_warnings = false) = 0;
-    virtual void upload_vec4(const std::string &name, squint::fvec4 value, bool suppress_warnings = false) = 0;
+    virtual void upload_mat4(const std::string &name, const squint::fmat4& value, bool suppress_warnings = false) = 0;
+    virtual void upload_vec4(const std::string &name, const squint::fvec4& value, bool suppress_warnings = false) = 0;
     virtual void upload_texture2D(const std::string &name, texture2D *tex, bool supress_warnings = false) = 0;
     virtual uint32_t get_id() = 0;
 };

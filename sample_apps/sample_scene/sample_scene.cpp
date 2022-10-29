@@ -11,14 +11,13 @@ using namespace squint::quantities;
 template <typename T> class sample_obj_render_system : public render_system<T> {
   public:
     void render(time_f dt, T &entity) const override {
-        if (entity.mat && entity.mat->basic_texture_shader.get()) {
-            auto s = entity.mat->basic_texture_shader.get();
-            s->upload_texture2D("earth_day", entity.earth_day.get());
-            s->upload_texture2D("earth_clouds", entity.earth_clouds.get());
-            tensor<length_f, 3> point{};
-            point[1] = length_f::meters(1.0f);
-            entity.mesh->face_towards(point, {0.0f, 0.0f, 1.0f});
-            s->upload_mat4("model", entity.mesh->get_transformation_matrix());
+        auto mat = entity.mat;
+        if (mat) {
+            mat->set_texture(entity.checkerboard_tex.get());
+            // tensor<length_f, 3> point{};
+            // point[1] = length_f::meters(1.0f);
+            // entity.mesh->face_towards(point, {0.0f, 0.0f, 1.0f});
+            mat->set_model(entity.mesh.get());
             entity.mesh->draw();
         }
     }
@@ -28,15 +27,13 @@ class sample_obj : public entity<sample_obj> {
     sample_obj(basic_texture *mat) : mat(mat) { gen_render_system<sample_obj_render_system>(); }
     void on_enter() override {
         mesh = std::move(std::make_unique<torus_mesh>(100, 200, 0.5f, 1.0f));
-        earth_day = app::instance().active_renderer()->gen_texture("../textures/earth_day.jpg");
-        earth_clouds = app::instance().active_renderer()->gen_texture("../textures/earth_clouds.jpg");
-        mesh->bind_shader(mat->basic_texture_shader.get());
+        checkerboard_tex = app::instance().active_renderer()->gen_texture("../textures/checkerboard.png");
+        mesh->bind_shader(mat->get_shader());
     }
     void on_exit() override { mesh = nullptr; }
     basic_texture *mat;
     std::unique_ptr<torus_mesh> mesh;
-    std::unique_ptr<texture2D> earth_day;
-    std::unique_ptr<texture2D> earth_clouds;
+    std::unique_ptr<texture2D> checkerboard_tex;
 };
 
 // LAYER ---------------------------------------------------------------------------------------------------------------

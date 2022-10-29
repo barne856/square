@@ -7,16 +7,8 @@
 #include <concepts>
 
 namespace lit {
-/**
- * @brief Camera projection types
- *
- */
 enum class projection_type { PERSPECTIVE, ORTHOGRAPHIC };
-/**
- * @brief Concept for the camera entity.
- *
- * @details Used as concept for render_systems, physics_systems, and controls_systems templates.
- */
+// concept for templated systems
 template <typename T>
 concept projectable = requires(T t) {
     requires transformable<T>;
@@ -39,10 +31,7 @@ concept projectable = requires(T t) {
     { t.get_near_clip_plane_persp() } -> std::same_as<float>;
     { t.get_far_clip_plane_persp() } -> std::same_as<float>;
 };
-/**
- * @brief Controller that handles updating the camera when the window resizes.
- *
- */
+// Controller that handles updating the camera when the window resizes.
 template <projectable T> class camera_resize_controller : public controls_system<T> {
   public:
     virtual bool on_resize(const window_resize_event &event, T &cam) const override final {
@@ -53,20 +42,17 @@ template <projectable T> class camera_resize_controller : public controls_system
         return true;
     }
 };
-/**
- * @brief Camera entity used for rendering scenes.
- *
- * @details All scenes that render objects will contain at least one camera entity. Multiple cameras can be used on a
- * single scene. For example, a single scene may render 3D world objects using a perspective projection and overlay UI
- * elements rendered with another camera using an orthographic projection.
- *
- * This class provides some methods to modify and update the camera. You must run 'recalculate_projection()' after you
- * update the camera for the changes to take effect.
- *
- * The clip planes are to be negative if they are behind the viewer and positive if they are in front of the viewer.
- * fovy is the vertical field of view if type is PERSPECTIVE and is in radians.
- * ortho_scale is the scale of the camera view if type is ORTHOGRAPHIC and is measured vertically from top to bottom.
- */
+// This is the camera entity used for rendering scenes. All scenes that render objects will contain at least one camera
+// entity. Multiple cameras can be used on a single scene. For example, a single scene may render 3D world objects using
+// a perspective projection and overlay UI elements rendered with another camera using an orthographic projection.
+//
+// This class provides some methods to modify and update the camera. You must call 'recalculate_projection()' after you
+// update the camera for the changes to take effect.
+//
+// The clip planes are to be negative if they are behind the viewer and positive if they are in front of the viewer.
+// Perspective projection clip planes must be positive. fovy is the vertical field of view if type is PERSPECTIVE and is
+// in radians. ortho_scale is the scale of the camera view if type is ORTHOGRAPHIC and is measured vertically from top
+// to center (full vertical height is 2*ortho_scale and full horizontal width is 2*ortho_scale*aspect).
 class camera : public entity<camera>, public transform {
   public:
     camera(projection_type type, float aspect) : type(type), aspect(aspect) {
@@ -104,6 +90,8 @@ class camera : public entity<camera>, public transform {
 
   private:
     squint::fmat4 projection;
+    projection_type type;
+    // default values for the projections
     float fovy = M_PI_4f;
     float ortho_scale = 1.0f;
     float aspect = 1.0f;
@@ -111,7 +99,6 @@ class camera : public entity<camera>, public transform {
     float ortho_far = 1.0f;
     float persp_near = 0.1f;
     float persp_far = 10.0f;
-    projection_type type;
 };
 } // namespace lit
 #endif
