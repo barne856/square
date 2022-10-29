@@ -225,6 +225,7 @@ class renderer : public object {
     virtual void draw_mesh(mesh *m, draw_method method) = 0;
     virtual void set_viewport(size_t x, size_t y, size_t width, size_t height) = 0;
     virtual void set_cursor(cursor_type type) = 0;
+    virtual ~renderer(){};
 
   private:
     void run_step();
@@ -360,6 +361,7 @@ class buffer {
 class texture2D : public buffer {
   public:
     texture2D() : buffer({}, buffer_access_type::STATIC, 0) {}
+    virtual ~texture2D(){};
 };
 // An abstract base class for vertex input assembly
 //
@@ -379,6 +381,7 @@ class vertex_input_assembly {
     inline const std::vector<std::unique_ptr<buffer>> &get_vertex_buffers() const { return vertex_buffers; }
     inline const buffer *get_index_buffer() const { return index_buffer.get(); }
     inline index_type get_index_type() const { return type; }
+    virtual ~vertex_input_assembly(){};
 
   protected:
     std::vector<std::unique_ptr<buffer>> vertex_buffers;
