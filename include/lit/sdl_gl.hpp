@@ -31,11 +31,11 @@ class sdl_gl_renderer : public renderer {
     virtual void set_cursor(cursor_type type) override final;
 
   private:
-    void create_context();
-    void poll_events();
-    void destroy_context();
-    void activate_context();
-    void swap_buffers();
+    void create_context() override final;
+    void poll_events() override final;
+    void destroy_context() override final;
+    void activate_context() override final;
+    void swap_buffers() override final;
     using renderer::on_key;
     using renderer::on_mouse_button;
     using renderer::on_mouse_move;
@@ -53,9 +53,9 @@ class sdl_gl_shader : public shader {
     virtual void activate() override final;
     sdl_gl_shader(const std::filesystem::path &shader_src_folder);
     virtual ~sdl_gl_shader();
-    virtual void upload_mat4(const std::string &name, const squint::fmat4& value,
+    virtual void upload_mat4(const std::string &name, const squint::fmat4 &value,
                              bool suppress_warnings = false) override final;
-    virtual void upload_vec4(const std::string &name, const squint::fvec4& value,
+    virtual void upload_vec4(const std::string &name, const squint::fvec4 &value,
                              bool suppress_warnings = false) override final;
     virtual void upload_texture2D(const std::string &name, texture2D *texture,
                                   bool suppress_warnings = false) override final;

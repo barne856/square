@@ -1,14 +1,8 @@
-/**
- * @file solid_color.cpp
- * @brief Sample app displaying solid colors in two windows
- * @details This app will create two windows each displaing solid colors that
- * are combinations of red and green. Each window can be controlled separately
- * with the arrow keys.
- * @date 2022-09-04
- *
- * @copyright Copyright (c) 2022
- *
- */
+// A sample app displaying solid colors in two windows.
+// This app will create two windows each displaing solid colors that
+// are combinations of red and green. Each window can be controlled separately
+// with the arrow keys.
+
 #include "lit/sdl_gl.hpp"
 #include <cmath>
 

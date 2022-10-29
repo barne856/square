@@ -5,18 +5,18 @@ namespace lit {
 
 // event callback types
 struct mouse_scroll_event {
-    float x; /**< the amount scrolled horizontally, positive to the right and negative to the left.*/
-    float y; /**< the amount scrolled vertically, positive away from the user and negative toward the user.*/
+    float x; // the amount scrolled horizontally, positive to the right and negative to the left
+    float y; // the amount scrolled vertically, positive away from the user and negative toward the user
 };
 struct mouse_move_event {
-    int x;    /**< window coordinates of mouse position (in pixels from left), reported if cursor is visible*/
-    int y;    /**< window coordinates of mouse position (in pixels from top), reported if cursor is visible*/
-    int xrel; /**< relative motion from last event in x direction (right is positive), always reported */
-    int yrel; /**< relative motion from last event in y direction (down is positive), always reported */
+    int x;    // window coordinates of mouse position (in pixels from left), reported if cursor is visible
+    int y;    // window coordinates of mouse position (in pixels from top), reported if cursor is visible
+    int xrel; // relative motion from last event in x direction (right is positive), always reported
+    int yrel; // relative motion from last event in y direction (down is positive), always reported
 };
 struct window_resize_event {
-    uint64_t width;  /**< pixels */
-    uint64_t height; /**< pixels */
+    uint64_t width;  // horizontal pixels
+    uint64_t height; // vertical pixels
 };
 enum class mouse_button_event {
     LEFT_MOUSE_DOWN,
@@ -237,28 +237,22 @@ enum class key_event {
     MENU_UP,
 };
 
-/**
- * @brief System that provides render() callback for entities
- *
- */
+// System that provides render() callback for entities
+// render() called once per frame with dt equal to the wall-clock time between frames
 template <typename T> class render_system {
   public:
     virtual void render(squint::quantities::time_f dt, T &entity) const {}
     virtual ~render_system() {}
 };
-/**
- * @brief System that provides update() callback for entities
- *
- */
+// System that provides update() callback for entities
+// update() called once per frame with dt equal to a small fixed amount set in the renderer settings
 template <typename T> class physics_system {
   public:
     virtual void update(squint::quantities::time_f dt, T &entity) const {}
     virtual ~physics_system() {}
 };
-/**
- * @brief System that provides event callbacks for entities
- *
- */
+// System that provides event callbacks for entities
+// callbacks are called once for each relevant event that occured between frames
 template <typename T> class controls_system {
   public:
     virtual bool on_key(const key_event &event, T &entity) const { return false; }
