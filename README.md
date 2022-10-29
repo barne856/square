@@ -16,7 +16,7 @@ git clone --recurse-submodules -j8 https://github.com/barne856/square
 Along with the SQUINT library, you will need OpenGL 4.5 capable hardware, SDL2, SDL2_Image, and GLEW. SQUINT can be built with or without Intel MKL. You can build the sample applications using the included CMakeLists.txt.
 
 # Overview
-The code is internally documents in the header files and sample application files. The architecture of square is shown in the diagrams below:
+The code is internally documented in the header files and sample application files. The architecture of square is shown in the diagrams below:
 
 ```mermaid
 classDiagram
