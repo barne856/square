@@ -131,7 +131,7 @@ A scene is any entity that contains one or more `camera` entities. A scene can h
 
 You can render `entity`s using `material`s. A `material` represents a shader in OpenGL. All meshes that will be rendered by the material are child objects of that material.
 
-All `entity`s in a scene is an `object` containing `systems` and inheriting from components. Components are classes that provide data and functions to operate on the data while `system`s are callbacks to rendering events such as a physics/rendering update or an input event.
+All `entity`s in a scene are `object`s containing `systems` and inheriting from components. Components are classes that provide data and functions to operate on the data while `system`s are callbacks to rendering events such as a physics/rendering update or an input event.
 
 # Example
 ## Renderer Specification
