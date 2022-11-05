@@ -22,12 +22,14 @@ class sdl_gl_renderer : public renderer {
     virtual void enable_blending(bool enable) override final;
     virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) override final;
     virtual std::unique_ptr<shader> gen_shader(const std::vector<shader_src> &shader_sources) override final;
-    virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes, const size_t num_elements,
+    virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes,
                                                const buffer_format &format,
                                                const buffer_access_type type) override final;
     virtual std::unique_ptr<texture2D> gen_texture(const std::filesystem::path &image_filepath) override final;
     virtual std::unique_ptr<vertex_input_assembly> gen_vertex_input_assembly(index_type type) override final;
-    virtual void draw_mesh(mesh *m, draw_method method) override final;
+    virtual void draw_mesh(const simple_mesh *m, const transform *model, material *mat) override final;
+    virtual void draw_mesh(const instanced_mesh *m, const transform *model, material *mat,
+                           unsigned int instance_count) override final;
     virtual void set_viewport(size_t x, size_t y, size_t width, size_t height) override final;
     virtual void set_cursor(cursor_type type) override final;
 
@@ -59,8 +61,10 @@ class sdl_gl_shader : public shader {
                              bool suppress_warnings = false) override final;
     virtual void upload_vec4(const std::string &name, const squint::fvec4 &value,
                              bool suppress_warnings = false) override final;
-    virtual void upload_texture2D(const std::string &name, texture2D *texture,
+    virtual void upload_texture2D(const std::string &name, const texture2D *texture,
                                   bool suppress_warnings = false) override final;
+    virtual void upload_storage_buffer(const std::string &name, const buffer *ssbo,
+                                       bool suppress_warnings = false) override final;
     virtual uint32_t get_id() override final;
 
   private:
@@ -81,12 +85,13 @@ class sdl_gl_shader : public shader {
     GLuint program;
     std::unordered_map<std::string, GLint> resource_location_cache;
     std::unordered_map<std::string, GLint> texture_binding_cache;
+    std::unordered_map<std::string, GLint> storage_binding_cache;
 };
 class sdl_gl_buffer : public buffer {
   public:
-    sdl_gl_buffer(const void *data, const size_t size_in_bytes, const size_t num_elements, const buffer_format &format,
+    sdl_gl_buffer(const void *data, const size_t size_in_bytes, const buffer_format &format,
                   const buffer_access_type type)
-        : buffer(format, type, num_elements) {
+        : buffer(format, type, size_in_bytes) {
         // Create the buffer
         glCreateBuffers(1, &buffer_id);
         GLbitfield flags = 0;
@@ -111,7 +116,6 @@ class sdl_gl_buffer : public buffer {
         }
     }
     virtual const uint32_t get_id() const override final { return buffer_id; }
-    virtual const size_t size() const override final { return num_elements; }
     ~sdl_gl_buffer() { glDeleteBuffers(1, &buffer_id); }
 
   private:
@@ -121,7 +125,6 @@ class sdl_gl_texture2D : public texture2D {
   public:
     sdl_gl_texture2D(const std::filesystem::path &image_filepath);
     virtual const uint32_t get_id() const override final { return texture_id; }
-    virtual const size_t size() const override final { return num_elements; }
     ~sdl_gl_texture2D() {
         glDeleteBuffers(1, &buffer_id);
         glDeleteTextures(1, &texture_id);
@@ -138,25 +141,27 @@ class sdl_gl_vertex_input_assembly : public vertex_input_assembly {
   public:
     sdl_gl_vertex_input_assembly(index_type type) : vertex_input_assembly(type) { glCreateVertexArrays(1, &vao); }
     virtual void bind_shader(shader *s) override final {
-        int buffer_binding_index = 0;
-        for (auto &buffer : vertex_buffers) {
-            for (const auto &attrib : buffer->get_format().get_attributes()) {
-                GLuint attrib_loc = glGetAttribLocation(static_cast<GLuint>(s->get_id()), attrib.name.c_str());
-                // if material has this attribute, enable it
-                if (attrib_loc != -1) {
-                    glEnableVertexArrayAttrib(vao, attrib_loc);
-                    glVertexArrayAttribFormat(vao, attrib_loc, static_cast<GLuint>(attrib.component_count()), GL_FLOAT,
-                                              GL_FALSE, static_cast<GLint>(attrib.offset * 4));
-                    glVertexArrayAttribBinding(vao, attrib_loc, static_cast<GLuint>(buffer_binding_index));
-                    glVertexArrayVertexBuffer(vao, static_cast<GLuint>(buffer_binding_index),
-                                              static_cast<GLuint>(buffer->get_id()), 0,
-                                              static_cast<GLsizei>(buffer->get_format().get_stride() * 4));
+        if (s) {
+            int buffer_binding_index = 0;
+            for (auto &buffer : vertex_buffers) {
+                for (const auto &attrib : buffer->get_format().get_attributes()) {
+                    GLuint attrib_loc = glGetAttribLocation(static_cast<GLuint>(s->get_id()), attrib.name.c_str());
+                    // if material has this attribute, enable it
+                    if (attrib_loc != -1) {
+                        glEnableVertexArrayAttrib(vao, attrib_loc);
+                        glVertexArrayAttribFormat(vao, attrib_loc, static_cast<GLuint>(attrib.component_count()),
+                                                  GL_FLOAT, GL_FALSE, static_cast<GLint>(attrib.offset));
+                        glVertexArrayAttribBinding(vao, attrib_loc, static_cast<GLuint>(buffer_binding_index));
+                        glVertexArrayVertexBuffer(vao, static_cast<GLuint>(buffer_binding_index),
+                                                  static_cast<GLuint>(buffer->get_id()), 0,
+                                                  static_cast<GLsizei>(buffer->get_format().get_stride()));
+                    }
                 }
+                buffer_binding_index++;
             }
-            buffer_binding_index++;
-        }
-        if (index_buffer) {
-            glVertexArrayElementBuffer(vao, static_cast<GLuint>(index_buffer->get_id()));
+            if (index_buffer) {
+                glVertexArrayElementBuffer(vao, static_cast<GLuint>(index_buffer->get_id()));
+            }
         }
     }
     virtual void activate() const override final { glBindVertexArray(vao); }

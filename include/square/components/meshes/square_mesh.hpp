@@ -5,7 +5,7 @@
 
 namespace square {
 // constructs a square mesh. Scale the mesh's transform to produce a general rectilinear quadtrangle
-class square_mesh : public mesh {
+class square_mesh : public simple_mesh {
     struct quad_vertex {
         squint::fvec2 position;
         squint::fvec3 normal;
@@ -16,7 +16,7 @@ class square_mesh : public mesh {
     // This method will produce a square mesh centered at the origin with side length 1 facing in the positive z
     // direction
     // position, normal and texture coordinates are supported
-    square_mesh() : mesh(draw_method::TRIANGLES, index_type::UNSIGNED_BYTE) {
+    square_mesh() : simple_mesh(draw_method::TRIANGLES, index_type::UNSIGNED_BYTE) {
         auto the_renderer = app::instance().active_renderer();
         // geometry
         std::vector<quad_vertex> geom;
@@ -47,7 +47,8 @@ class square_mesh : public mesh {
         indices.push_back(2);
         indices.push_back(3);
         indices.push_back(0);
-        set_index_buffer(the_renderer->gen_buffer<uint8_t>(indices, {}, buffer_access_type::STATIC));
+        set_index_buffer(the_renderer->gen_buffer<uint8_t>(indices, {{buffer_attribute_type::INDEX_BYTE, ""}},
+                                                           buffer_access_type::STATIC));
     }
 };
 } // namespace square

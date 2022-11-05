@@ -5,7 +5,7 @@
 
 namespace square {
 // constructs a circle mesh.
-class circle_mesh : public mesh {
+class circle_mesh : public simple_mesh {
     struct circle_vertex {
         squint::fvec2 position;
         squint::fvec3 normal;
@@ -15,7 +15,7 @@ class circle_mesh : public mesh {
     // This method will produce a circle mesh centered at the origin with radius r facing in the positive z
     // direction
     // position and normals are supported
-    circle_mesh(int sides, float radius) : mesh(draw_method::TRIANGLE_FAN, index_type::NONE) {
+    circle_mesh(int sides, float radius) : simple_mesh(draw_method::TRIANGLE_FAN, index_type::NONE) {
         auto the_renderer = app::instance().active_renderer();
         // geometry
         std::vector<circle_vertex> geom;

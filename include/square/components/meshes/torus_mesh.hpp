@@ -4,7 +4,7 @@
 
 namespace square {
 // constructs a torus mesh from a given number of rings, segments on those rings, an inner radius and and outer radius
-class torus_mesh : public mesh {
+class torus_mesh : public simple_mesh {
     struct torus_vertex {
         squint::fvec3 position;
         squint::fvec3 normal;
@@ -13,8 +13,8 @@ class torus_mesh : public mesh {
 
   public:
     torus_mesh(unsigned int n_segments, unsigned int n_rings, float inner_radius, float outer_radius)
-        : mesh(draw_method::TRIANGLE_STRIP, index_type::UNSIGNED_INT), r(outer_radius), R(inner_radius), q(n_segments),
-          p(n_rings) {
+        : simple_mesh(draw_method::TRIANGLE_STRIP, index_type::UNSIGNED_INT), r(outer_radius), R(inner_radius),
+          q(n_segments), p(n_rings) {
         auto the_renderer = app::instance().active_renderer();
         std::vector<torus_vertex> vertex_data;
         std::vector<unsigned int> indices;
@@ -57,7 +57,8 @@ class torus_mesh : public mesh {
                                                                  },
                                                                  buffer_access_type::STATIC));
 
-        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {}, buffer_access_type::STATIC));
+        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
+                                                                buffer_access_type::STATIC));
     }
 
   private:

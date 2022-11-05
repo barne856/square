@@ -1,5 +1,6 @@
 #include "square/sdl_gl.hpp"
 #include "square/components/mesh.hpp"
+#include "square/entities/material.hpp"
 #include <fstream>
 namespace square {
 // Debug functions
@@ -1015,9 +1016,8 @@ std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::vector<shader_src
     return std::make_unique<sdl_gl_shader>(shader_sources);
 }
 std::unique_ptr<buffer> sdl_gl_renderer::gen_buffer(const void *data, const size_t size_in_bytes,
-                                                    const size_t num_elements, const buffer_format &format,
-                                                    const buffer_access_type type) {
-    return std::make_unique<sdl_gl_buffer>(data, size_in_bytes, num_elements, format, type);
+                                                    const buffer_format &format, const buffer_access_type type) {
+    return std::make_unique<sdl_gl_buffer>(data, size_in_bytes, format, type);
 }
 std::unique_ptr<texture2D> sdl_gl_renderer::gen_texture(const std::filesystem::path &image_filepath) {
     return std::make_unique<sdl_gl_texture2D>(image_filepath);
@@ -1025,18 +1025,39 @@ std::unique_ptr<texture2D> sdl_gl_renderer::gen_texture(const std::filesystem::p
 std::unique_ptr<vertex_input_assembly> sdl_gl_renderer::gen_vertex_input_assembly(index_type type) {
     return std::make_unique<sdl_gl_vertex_input_assembly>(type);
 }
-void sdl_gl_renderer::draw_mesh(mesh *m, draw_method method) {
+void sdl_gl_renderer::draw_mesh(const simple_mesh *m, const transform *model, material *mat) {
     const vertex_input_assembly *input_assembly = m->get_input_assembly();
     if (input_assembly) {
         input_assembly->activate();
+        mat->set_model(model);
         if (input_assembly->get_index_buffer()) {
-            glDrawElements(gl_draw_method(method), static_cast<GLsizei>(input_assembly->get_index_buffer()->size()),
+            glDrawElements(gl_draw_method(m->get_draw_method()),
+                           static_cast<GLsizei>(input_assembly->get_index_buffer()->count()),
                            gl_index_type(input_assembly->get_index_type()), nullptr);
         } else {
-            glDrawArrays(gl_draw_method(method), 0,
-                         static_cast<GLsizei>(input_assembly->get_vertex_buffers()[0]->size()));
+            glDrawArrays(gl_draw_method(m->get_draw_method()), 0,
+                         static_cast<GLsizei>(input_assembly->get_vertex_buffers()[0]->count()));
         }
     }
+}
+void sdl_gl_renderer::draw_mesh(const instanced_mesh *m, const transform *model, material *mat,
+                                unsigned int instance_count) {
+    const vertex_input_assembly *input_assembly = m->get_input_assembly();
+    if (input_assembly) {
+        input_assembly->activate();
+        mat->set_model(model);
+        mat->get_shader()->upload_storage_buffer("model_instances", m->get_transform_buffer());
+        if (input_assembly->get_index_buffer()) {
+            glDrawElementsInstancedBaseVertex(
+                gl_draw_method(m->get_draw_method()), static_cast<GLsizei>(input_assembly->get_index_buffer()->count()),
+                gl_index_type(input_assembly->get_index_type()), nullptr, m->get_instance_count(), 0);
+        } else {
+            glDrawArraysInstanced(gl_draw_method(m->get_draw_method()), 0,
+                                  static_cast<GLsizei>(input_assembly->get_vertex_buffers()[0]->count()),
+                                  m->get_instance_count());
+        }
+    }
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
 }
 void sdl_gl_renderer::set_viewport(size_t x, size_t y, size_t width, size_t height) { glViewport(x, y, width, height); }
 void sdl_gl_renderer::set_cursor(cursor_type type) {
@@ -1176,7 +1197,7 @@ void sdl_gl_shader::upload_vec4(const std::string &name, const squint::fvec4 &va
         glUniform4f(resource_location_cache[name], value[0], value[1], value[2], value[3]);
     }
 }
-void sdl_gl_shader::upload_texture2D(const std::string &name, texture2D *texture, bool suppress_warnings) {
+void sdl_gl_shader::upload_texture2D(const std::string &name, const texture2D *texture, bool suppress_warnings) {
     if (!texture) {
         // no data to upload
         return;
@@ -1193,6 +1214,23 @@ void sdl_gl_shader::upload_texture2D(const std::string &name, texture2D *texture
         glBindTextureUnit(texture_binding_cache[name], texture->get_id());
     }
 }
+void sdl_gl_shader::upload_storage_buffer(const std::string &name, const buffer *ssbo, bool suppress_warnings) {
+    if (!ssbo) {
+        // no data to upload
+        return;
+    }
+    if (!resource_location_cache.count(name)) {
+        // cache the location
+        resource_location_cache.insert_or_assign(
+            name, glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name.c_str()));
+        storage_binding_cache.insert_or_assign(name, static_cast<GLuint>(storage_binding_cache.size()));
+        glShaderStorageBlockBinding(program, resource_location_cache[name], storage_binding_cache[name]);
+    }
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, storage_binding_cache[name], ssbo->get_id());
+    if (resource_location_cache[name] == GL_INVALID_INDEX && suppress_warnings == false) {
+        std::cerr << "SHADER WARNING: No storage buffer block '" << name << "' exists in the shader" << std::endl;
+    }
+}
 uint32_t sdl_gl_shader::get_id() { return program; }
 sdl_gl_texture2D::sdl_gl_texture2D(const std::filesystem::path &image_filepath) {
     SDL_Surface *surface = IMG_Load(image_filepath.string().c_str());
@@ -1201,10 +1239,9 @@ sdl_gl_texture2D::sdl_gl_texture2D(const std::filesystem::path &image_filepath) 
     }
     width = surface->w;
     height = surface->h;
-    num_elements = width * height;
     uint8_t channels = surface->format->BytesPerPixel;
     glCreateBuffers(1, &buffer_id);
-    glNamedBufferStorage(buffer_id, num_elements * channels, surface->pixels, 0);
+    glNamedBufferStorage(buffer_id, width * height * channels, surface->pixels, 0);
     SDL_FreeSurface(surface);
 
     glCreateTextures(GL_TEXTURE_2D, 1, &texture_id);

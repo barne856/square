@@ -1,5 +1,6 @@
 #ifndef SQUARE_RENDERER
 #define SQUARE_RENDERER
+#include "square/components/transform.hpp"
 #include "square/entity.hpp"
 #include <cstring>
 #include <filesystem>
@@ -49,9 +50,13 @@ enum class buffer_attribute_type {
                     uniform block using the std140 layout. Data will be
                     interpreted as specified by the uniform block definition in the
                     shader.*/
-    STORAGE      /**< Represetns arbitrary data and is the equivalent of the glsl
-                    storage block (uniform buffer) using the std430 layout. Data will
-                    be interpreted as specified by the storage block in the shader.*/
+    STORAGE,     /**< Represetns arbitrary data and is the equivalent of the glsl
+                   storage block (uniform buffer) using the std430 layout. Data will
+                   be interpreted as specified by the storage block in the shader.*/
+    INDEX_BYTE,  // 1 byte indices
+    INDEX_SHORT, // 2 byte indices
+    INDEX_INT,   // 4 byte indices
+
 };
 enum class draw_method {
     NONE,           /**< Signals no drawing will be done with this mesh.*/
@@ -123,7 +128,7 @@ class buffer_attribute {
     // the attrib_name is the name of the attribute used link the data in the buffer to a resource in the shader. This
     // must match the name of the resourse in the shader exactly.
     buffer_attribute(buffer_attribute_type attrib_type, const std::string &attrib_name)
-        : type(attrib_type), name(attrib_name), offset(0), size(0) {}
+        : type(attrib_type), name(attrib_name), offset(0) {}
     ~buffer_attribute(){};
     // Returns the number of components (or dimensions) in an attribute. The number of components is returned according
     // to the following table:
@@ -137,6 +142,9 @@ class buffer_attribute {
     // TEXTURE_MAP    | 2
     // UNIFORM        | 1
     // STORAGE        | 1
+    // INDEX_BYTE,    | 1
+    // INDEX_SHORT,   | 1
+    // INDEX_INT,     | 1
     const size_t component_count() const {
         switch (type) {
         case buffer_attribute_type::POSITION_2D:
@@ -154,6 +162,47 @@ class buffer_attribute {
         case buffer_attribute_type::TEXTURE_MAP:
             return 2;
             break;
+        case buffer_attribute_type::INDEX_BYTE:
+            return 1;
+            break;
+        case buffer_attribute_type::INDEX_SHORT:
+            return 1;
+            break;
+        case buffer_attribute_type::INDEX_INT:
+            return 1;
+            break;
+        default:
+            return 1;
+            break;
+        }
+    }
+    // the size fo the attribute in bytes
+    const size_t bytes() const {
+        switch (type) {
+        case buffer_attribute_type::POSITION_2D:
+            return 8;
+            break;
+        case buffer_attribute_type::POSITION_3D:
+            return 12;
+            break;
+        case buffer_attribute_type::NORMAL:
+            return 12;
+            break;
+        case buffer_attribute_type::COLOR:
+            return 16;
+            break;
+        case buffer_attribute_type::TEXTURE_MAP:
+            return 8;
+            break;
+        case buffer_attribute_type::INDEX_BYTE:
+            return 1;
+            break;
+        case buffer_attribute_type::INDEX_SHORT:
+            return 2;
+            break;
+        case buffer_attribute_type::INDEX_INT:
+            return 4;
+            break;
         default:
             return 1;
             break;
@@ -164,7 +213,6 @@ class buffer_attribute {
                                    shader resource.*/
     size_t offset;              /**< The offset in bytes into the buffer where the first
                                    element of this data begins.*/
-    size_t size;                /**< The size in bytes of a single element of this data.*/
 };
 // a collection of buffer attributes used to link a vertex buffer to the inputs of a vertex shader
 class buffer_format {
@@ -173,7 +221,7 @@ class buffer_format {
         size_t offset = 0;
         for (auto &attrib : attributes) {
             attrib.offset = offset;
-            offset += attrib.component_count();
+            offset += attrib.bytes();
         }
         stride = offset;
     }
@@ -182,7 +230,7 @@ class buffer_format {
 
   private:
     std::vector<buffer_attribute> attributes;
-    size_t stride; /**< The stride in elements between attributes of the same type in
+    size_t stride; /**< The stride in bytes between attributes of the same type in
                   the buffer. The total size of all the buffer attributes.*/
 };
 
@@ -207,6 +255,9 @@ class buffer;
 class mesh;
 class vertex_input_assembly;
 class texture2D;
+class simple_mesh;
+class instanced_mesh;
+class material;
 // This is an abstract base class for renderers that is implemented by rendering APIs.
 //
 // A renderer acts as the root object in an application. Loading an object in a renderer sets the active scene
@@ -224,18 +275,20 @@ class renderer : public object {
     virtual void enable_depth_testing(bool enable) = 0;
     virtual void enable_blending(bool enable) = 0;
     virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) = 0;
-    virtual std::unique_ptr<shader> gen_shader(const std::vector<shader_src>& shader_sources) = 0;
+    virtual std::unique_ptr<shader> gen_shader(const std::vector<shader_src> &shader_sources) = 0;
     inline const renderer_properties &get_properties() const { return properties; }
     template <typename T>
     std::unique_ptr<buffer> gen_buffer(const std::vector<T> &data, const buffer_format &format,
                                        buffer_access_type type) {
-        return gen_buffer(static_cast<const void *>(data.data()), data.size() * sizeof(T), data.size(), format, type);
+        return gen_buffer(static_cast<const void *>(data.data()), data.size() * sizeof(T), format, type);
     }
-    virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes, const size_t num_elements,
+    virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes,
                                                const buffer_format &format, const buffer_access_type type) = 0;
     virtual std::unique_ptr<texture2D> gen_texture(const std::filesystem::path &image_filepath) = 0;
     virtual std::unique_ptr<vertex_input_assembly> gen_vertex_input_assembly(index_type type) = 0;
-    virtual void draw_mesh(mesh *m, draw_method method) = 0;
+    virtual void draw_mesh(const simple_mesh *m, const transform *model, material *mat) = 0;
+    virtual void draw_mesh(const instanced_mesh *m, const transform *model, material *mat,
+                           unsigned int instance_count) = 0;
     virtual void set_viewport(size_t x, size_t y, size_t width, size_t height) = 0;
     virtual void set_cursor(cursor_type type) = 0;
     virtual ~renderer(){};
@@ -343,32 +396,45 @@ class shader {
     virtual ~shader() {}
     virtual void upload_mat4(const std::string &name, const squint::fmat4 &value, bool suppress_warnings = false) = 0;
     virtual void upload_vec4(const std::string &name, const squint::fvec4 &value, bool suppress_warnings = false) = 0;
-    virtual void upload_texture2D(const std::string &name, texture2D *tex, bool supress_warnings = false) = 0;
+    virtual void upload_texture2D(const std::string &name, const texture2D *tex, bool suppress_warnings = false) = 0;
+    virtual void upload_storage_buffer(const std::string &name, const buffer *ssbo, bool suppress_warnings = false) = 0;
     virtual uint32_t get_id() = 0;
 };
 // An abstract base class for buffers
 class buffer {
   public:
-    buffer(const buffer_format &format, buffer_access_type type, size_t num_elements)
-        : format(format), type(type), num_elements(num_elements), buffer_ptr(nullptr) {}
-    template <typename T> std::vector<T> get_elements() {
+    buffer(const buffer_format &format, buffer_access_type type, size_t size_in_bytes)
+        : format(format), type(type), size_in_bytes(size_in_bytes), buffer_ptr(nullptr) {}
+    template <typename T> std::vector<T> read_elements(size_t offset, size_t count) {
+        assert(offset + count <= size<T>());
         std::vector<T> result{};
         if (buffer_ptr) {
-            result.resize(num_elements);
-            std::memcpy(static_cast<void *>(result.data()), buffer_ptr, sizeof(T) * num_elements);
+            result.resize(count);
+            std::memcpy(static_cast<void *>(result.data()), static_cast<void *>(static_cast<T *>(buffer_ptr) + offset),
+                        sizeof(T) * count);
         }
         return result;
     }
+    template <typename T> void write_elements(size_t offset, const std::vector<T> &elems) {
+        assert(offset + elems.size() <= size<T>());
+        if (buffer_ptr) {
+            std::memcpy(static_cast<void *>(static_cast<T *>(buffer_ptr) + offset),
+                        static_cast<const void *>(elems.data()), sizeof(T) * elems.size());
+        }
+    }
+    template <typename T> T &get(size_t i) { return *(static_cast<T *>(buffer_ptr) + i); }
+    template <typename T> const T &get(size_t i) const { return *(static_cast<const T *>(buffer_ptr) + i); }
     virtual ~buffer(){};
     inline const buffer_format &get_format() const { return format; }
     virtual const uint32_t get_id() const = 0;
-    virtual const size_t size() const = 0;
+    template <typename T> const size_t size() const { return size_in_bytes / sizeof(T); }
+    inline const size_t count() const { return size_in_bytes / get_format().get_stride(); }
 
   protected:
     buffer_format format;
     buffer_access_type type;
     void *buffer_ptr;
-    size_t num_elements;
+    size_t size_in_bytes;
 };
 // An abstract base class for 2D textures. These are used in shaders with the sampler2D uniform
 class texture2D : public buffer {

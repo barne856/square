@@ -5,7 +5,7 @@
 namespace square {
 
 // constructs a sphere mesh from either a lat-long grid or a tessellated icosahedron
-class sphere_mesh : public mesh {
+class sphere_mesh : public simple_mesh {
     struct sphere_vertex {
         squint::fvec3 position;
         squint::fvec3 normal;
@@ -17,7 +17,7 @@ class sphere_mesh : public mesh {
     // subdivided into 3 triangles per face recursively 'recursionLevel' times and each new vertex is normalized such
     // that they are all 'radius' from the origin. This method gives a more symetrical looking geometry from all angles,
     // but texture coordinates are not supported.
-    sphere_mesh(unsigned int recursionLevel, float radius) : mesh(draw_method::TRIANGLES, index_type::NONE) {
+    sphere_mesh(unsigned int recursionLevel, float radius) : simple_mesh(draw_method::TRIANGLES, index_type::NONE) {
         auto the_renderer = app::instance().active_renderer();
         // constants used to define the vertices of a regular icosahedron
         const float X = 0.525731112119133606f;
@@ -92,7 +92,8 @@ class sphere_mesh : public mesh {
     // of lines of latitude and longitude used to construct the mesh. The vertices of this mesh are less regularly
     // spaced than the icosahedron method and are more dense at the poles. However, texture coordinates are supported by
     // this method.
-    sphere_mesh(size_t n_lats, size_t n_lngs, float radius) : mesh(draw_method::TRIANGLES, index_type::UNSIGNED_INT) {
+    sphere_mesh(size_t n_lats, size_t n_lngs, float radius)
+        : simple_mesh(draw_method::TRIANGLES, index_type::UNSIGNED_INT) {
         auto the_renderer = app::instance().active_renderer();
         if (n_lngs < 3) {
             n_lngs = 3;
@@ -166,7 +167,8 @@ class sphere_mesh : public mesh {
                                                         {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
                                                     },
                                                     buffer_access_type::STATIC));
-        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {}, buffer_access_type::STATIC));
+        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
+                                                                buffer_access_type::STATIC));
     }
 
   private:

@@ -40,6 +40,7 @@ concept transformable = requires(T t) {
 class transform {
   public:
     transform();
+    transform(const squint::fmat4 &transform_matrix) : transformation_matrix(transform_matrix) {}
     squint::tensor<squint::quantities::length_f, 3> get_position() const;
     squint::fvec3 get_scale() const;
     squint::fmat4 get_translation_matrix() const;
