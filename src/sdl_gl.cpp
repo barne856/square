@@ -213,6 +213,7 @@ void GLAPIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GL
     }
 }
 void sdl_gl_renderer::init() {
+    SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
     SDL_Init(SDL_INIT_VIDEO); // Init SDL2, VIDEO also inits EVENTS
     // Initialize PNG loading
     int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
@@ -235,7 +236,7 @@ void sdl_gl_renderer::create_context() {
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, properties.samples);
     auto window_flag = properties.fullscreen ? SDL_WINDOW_FULLSCREEN : SDL_WINDOW_RESIZABLE;
     window = SDL_CreateWindow(properties.window_title, 0, 0, properties.window_width, properties.window_height,
-                              SDL_WINDOW_OPENGL | window_flag);
+                              SDL_WINDOW_OPENGL | window_flag | SDL_WINDOW_ALLOW_HIGHDPI);
 
     window_id = SDL_GetWindowID(window);
     glcontext = SDL_GL_CreateContext(window);
@@ -255,9 +256,16 @@ void sdl_gl_renderer::create_context() {
             std::cout << "GL VENDOR: " << glGetString(GL_VENDOR) << "\n";
             std::cout << "GL VERSION: " << glGetString(GL_VERSION) << "\n";
             std::cout << "GL RENDERER: " << glGetString(GL_RENDERER) << std::endl;
+            std::cout << "SDL VIDEO DRIVER: " << SDL_GetCurrentVideoDriver() << std::endl;
         }
     }
     set_cursor(properties.cursor);
+    // set the window width and height and gl viewport to actual pixels since high DPI reports a scaled coordinate
+    int w, h;
+    SDL_GL_GetDrawableSize(window, &w, &h);
+    properties.window_width = w;
+    properties.window_height = h;
+    glViewport(0, 0, w, h);
 }
 void sdl_gl_renderer::poll_events() {
     std::vector<SDL_Event> unhandled_events{};
@@ -271,8 +279,13 @@ void sdl_gl_renderer::poll_events() {
                     properties.running = false;
                     break;
                 case SDL_WINDOWEVENT_RESIZED:
-                    properties.window_width = static_cast<uint64_t>(event.window.data1);
-                    properties.window_height = static_cast<uint64_t>(event.window.data2);
+                    // properties.window_width = static_cast<uint64_t>(event.window.data1);
+                    // properties.window_height = static_cast<uint64_t>(event.window.data2);
+                    // high DPI monitors will not report actual pixels, so we get them this way
+                    int w, h;
+                    SDL_GL_GetDrawableSize(window, &w, &h);
+                    properties.window_width = w;
+                    properties.window_height = h;
                     on_resize({properties.window_width, properties.window_height});
                     break;
                 default:

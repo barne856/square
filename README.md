@@ -1,5 +1,7 @@
 # Square - A Rendering Engine built for SQUINT
 
+![logo](./img/logo.jpg)
+
 Square is a rendering engine meant to be used with the SQUINT linear algebra library to create 3D and 2D simulations of physical systems.
 
 Square provides a light abstraction over the core rendering APIs from OpenGL as well as a basic entity component system for modeling scenes of animated objects.
