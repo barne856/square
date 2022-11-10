@@ -29,8 +29,8 @@ class sample_obj : public entity<sample_obj> {
     sample_obj(basic_texture *mat) : mat(mat) { gen_render_system<sample_obj_render_system>(); }
     void on_enter() override {
         mesh = std::move(std::make_unique<torus_mesh>(100, 200, 0.5f, 1.0f));
-        checkerboard_tex = app::instance().active_renderer()->gen_texture("../textures/checkerboard.png");
-        mesh->bind_shader(mat->get_shader());
+        checkerboard_tex = app::renderer()->gen_texture("../textures/checkerboard.png");
+        mesh->bind_material(mat);
     }
     basic_texture *mat;
     std::unique_ptr<torus_mesh> mesh;
@@ -41,12 +41,14 @@ class sample_obj : public entity<sample_obj> {
 template <typename T> class sample_scene_render_system : public render_system<T> {
   public:
     void render(time_f dt, T &entity) const override {
-        // enable depth testing and face culling in this scene in case is was changed by another scene
-        app::instance().active_renderer()->enable_depth_testing(true);
-        app::instance().active_renderer()->enable_face_culling(true);
-        // We need to clear the color and depth buffer so that the scene is properly rendered each frame
-        app::instance().active_renderer()->clear_color_buffer({0.1f, 0.1f, 0.1f, 1.0f});
-        app::instance().active_renderer()->clear_depth_buffer();
+        if (auto renderer = app::renderer()) {
+            // enable depth testing and face culling in this scene in case is was changed by another scene
+            renderer->enable_depth_testing(true);
+            renderer->enable_face_culling(true);
+            // We need to clear the color and depth buffer so that the scene is properly rendered each frame
+            renderer->clear_color_buffer({0.1f, 0.1f, 0.1f, 1.0f});
+            renderer->clear_depth_buffer();
+        }
     }
 };
 template <typename T> class sample_scene_physics_system : public physics_system<T> {
@@ -72,7 +74,7 @@ template <typename T> class sample_scene_controls_system : public controls_syste
         if (event == key_event::T_DOWN) {
             enabled = !enabled;
         }
-        app::instance().active_renderer()->wireframe_mode(enabled);
+        app::renderer()->wireframe_mode(enabled);
         return true;
     }
 };
@@ -116,9 +118,9 @@ int main() {
     // first we need to initalize the renderer that will be used by the app
     sdl_gl_renderer::init();
     // next, we add the renderer to the app
-    app::instance().gen_renderer<sample_scene_renderer>();
+    app::gen_renderer<sample_scene_renderer>();
     // and we run the app
-    app::instance().run();
+    app::run();
     // once all renderers have been detached and the app run has ended, we clean up the renderer used by the app
     sdl_gl_renderer::quit();
     return 0;

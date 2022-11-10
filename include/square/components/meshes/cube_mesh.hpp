@@ -8,7 +8,6 @@ class cube_mesh : public simple_mesh {
   public:
     // Construct a mesh of a 3D cube. scale is the length of each face of the cube. Contains normals and vertices.
     cube_mesh(float scale) : simple_mesh(draw_method::TRIANGLES, index_type::UNSIGNED_BYTE) {
-        auto the_renderer = app::instance().active_renderer();
         std::vector<squint::fvec3> data;
         std::vector<uint8_t> indices;
 
@@ -126,14 +125,15 @@ class cube_mesh : public simple_mesh {
         indices.push_back(23);
         indices.push_back(20);
 
-        add_vertex_buffer(the_renderer->gen_buffer<squint::fvec3>(data,
-                                                                  {
-                                                                      {buffer_attribute_type::POSITION_3D, "position"},
-                                                                      {buffer_attribute_type::NORMAL, "normal"},
-                                                                  },
-                                                                  buffer_access_type::STATIC));
-        set_index_buffer(the_renderer->gen_buffer<uint8_t>(indices, {{buffer_attribute_type::INDEX_BYTE, ""}},
-                                                           buffer_access_type::STATIC));
+        add_vertex_buffer(
+            app::renderer()->gen_buffer<squint::fvec3>(data,
+                                                       {
+                                                           {buffer_attribute_type::POSITION_3D, "position"},
+                                                           {buffer_attribute_type::NORMAL, "normal"},
+                                                       },
+                                                       buffer_access_type::STATIC));
+        set_index_buffer(app::renderer()->gen_buffer<uint8_t>(indices, {{buffer_attribute_type::INDEX_BYTE, ""}},
+                                                              buffer_access_type::STATIC));
     }
 };
 } // namespace square

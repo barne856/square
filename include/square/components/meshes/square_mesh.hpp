@@ -17,7 +17,6 @@ class square_mesh : public simple_mesh {
     // direction
     // position, normal and texture coordinates are supported
     square_mesh() : simple_mesh(draw_method::TRIANGLES, index_type::UNSIGNED_BYTE) {
-        auto the_renderer = app::instance().active_renderer();
         // geometry
         std::vector<quad_vertex> geom;
         geom.reserve(4);
@@ -25,13 +24,14 @@ class square_mesh : public simple_mesh {
         geom.push_back({{0.5f, -0.5f}, {0.f, 0.f, 1.f}, {1.f, 0.f}});
         geom.push_back({{0.5f, 0.5f}, {0.f, 0.f, 1.f}, {1.f, 1.f}});
         geom.push_back({{-0.5f, 0.5f}, {0.f, 0.f, 1.f}, {0.f, 1.f}});
-        add_vertex_buffer(the_renderer->gen_buffer<quad_vertex>(geom,
-                                                                {
-                                                                    {buffer_attribute_type::POSITION_2D, "position"},
-                                                                    {buffer_attribute_type::NORMAL, "normal"},
-                                                                    {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
-                                                                },
-                                                                buffer_access_type::STATIC));
+        add_vertex_buffer(
+            app::renderer()->gen_buffer<quad_vertex>(geom,
+                                                     {
+                                                         {buffer_attribute_type::POSITION_2D, "position"},
+                                                         {buffer_attribute_type::NORMAL, "normal"},
+                                                         {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
+                                                     },
+                                                     buffer_access_type::STATIC));
         // indices
         //  3----2
         //  |  / |
@@ -47,8 +47,8 @@ class square_mesh : public simple_mesh {
         indices.push_back(2);
         indices.push_back(3);
         indices.push_back(0);
-        set_index_buffer(the_renderer->gen_buffer<uint8_t>(indices, {{buffer_attribute_type::INDEX_BYTE, ""}},
-                                                           buffer_access_type::STATIC));
+        set_index_buffer(app::renderer()->gen_buffer<uint8_t>(indices, {{buffer_attribute_type::INDEX_BYTE, ""}},
+                                                              buffer_access_type::STATIC));
     }
 };
 } // namespace square

@@ -17,9 +17,8 @@ class basic_texture : public material {
     void set_texture(texture2D *tex) { get_shader()->upload_texture2D("tex", tex); }
     void on_enter() override {
         // we need to construct the shader here since we need the rendering API to be loaded first
-        // material_shader = std::move(app::instance().active_renderer()->gen_shader("../shaders/basic_texture"));
-        material_shader = std::move(app::instance().active_renderer()->gen_shader({{shader_type::VERTEX_SHADER,
-                                                                                    R"(
+        material_shader = std::move(app::renderer()->gen_shader("basic_color", {{shader_type::VERTEX_SHADER,
+                                                                                 R"(
 #version 450
 
 in vec4 position;        // raw mesh model vertices
@@ -41,8 +40,8 @@ void main() {
   vert_tex_coords = tex_coords;
 }
           )"},
-                                                                                   {shader_type::FRAGMENT_SHADER,
-                                                                                    R"(
+                                                                                {shader_type::FRAGMENT_SHADER,
+                                                                                 R"(
 #version 450
 
 in vec2 vert_tex_coords;

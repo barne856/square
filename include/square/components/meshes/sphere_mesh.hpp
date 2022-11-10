@@ -18,7 +18,6 @@ class sphere_mesh : public simple_mesh {
     // that they are all 'radius' from the origin. This method gives a more symetrical looking geometry from all angles,
     // but texture coordinates are not supported.
     sphere_mesh(unsigned int recursionLevel, float radius) : simple_mesh(draw_method::TRIANGLES, index_type::NONE) {
-        auto the_renderer = app::instance().active_renderer();
         // constants used to define the vertices of a regular icosahedron
         const float X = 0.525731112119133606f;
         const float Z = 0.850650808352039932f;
@@ -81,12 +80,12 @@ class sphere_mesh : public simple_mesh {
             data.push_back(vertices[3 * i][1]);
             data.push_back(vertices[3 * i][2]);
         }
-        add_vertex_buffer(the_renderer->gen_buffer<float>(data,
-                                                          {
-                                                              {buffer_attribute_type::POSITION_3D, "position"},
-                                                              {buffer_attribute_type::NORMAL, "normal"},
-                                                          },
-                                                          buffer_access_type::STATIC));
+        add_vertex_buffer(app::renderer()->gen_buffer<float>(data,
+                                                             {
+                                                                 {buffer_attribute_type::POSITION_3D, "position"},
+                                                                 {buffer_attribute_type::NORMAL, "normal"},
+                                                             },
+                                                             buffer_access_type::STATIC));
     }
     // This method uses a latitude / longitude grid to construct the sphere's mesh. 'n_lats' and 'n_lngs' are the number
     // of lines of latitude and longitude used to construct the mesh. The vertices of this mesh are less regularly
@@ -94,7 +93,6 @@ class sphere_mesh : public simple_mesh {
     // this method.
     sphere_mesh(size_t n_lats, size_t n_lngs, float radius)
         : simple_mesh(draw_method::TRIANGLES, index_type::UNSIGNED_INT) {
-        auto the_renderer = app::instance().active_renderer();
         if (n_lngs < 3) {
             n_lngs = 3;
         }
@@ -160,15 +158,15 @@ class sphere_mesh : public simple_mesh {
             }
         }
         add_vertex_buffer(
-            the_renderer->gen_buffer<sphere_vertex>(data,
-                                                    {
-                                                        {buffer_attribute_type::POSITION_3D, "position"},
-                                                        {buffer_attribute_type::NORMAL, "normal"},
-                                                        {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
-                                                    },
-                                                    buffer_access_type::STATIC));
-        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
-                                                                buffer_access_type::STATIC));
+            app::renderer()->gen_buffer<sphere_vertex>(data,
+                                                       {
+                                                           {buffer_attribute_type::POSITION_3D, "position"},
+                                                           {buffer_attribute_type::NORMAL, "normal"},
+                                                           {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
+                                                       },
+                                                       buffer_access_type::STATIC));
+        set_index_buffer(app::renderer()->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
+                                                                   buffer_access_type::STATIC));
     }
 
   private:

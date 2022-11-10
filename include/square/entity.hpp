@@ -20,18 +20,27 @@ namespace square {
 //
 // When an object is loaded, all child objects are loaded. on_enter() and on_exit() are called for each child object in
 // the object tree when the parent object is loaded/unloaded by an application.
+//
+// An object can be disabled. If the object is disabled, it will not be updated (no callbacks will be executed) until it
+// is enabled again. the enter() and load() callbacks will be called regard of disabled state
 class object {
   public:
     object();
     void on_load();
     void on_unload();
-    inline const std::vector<std::unique_ptr<object>> &children() { return child_objects; }
-    inline object *parent() { return parent_object; }
-    template <typename U, typename... Args> void gen_object(Args... args) {
-        attach_object(std::make_unique<U>(args...));
+    // attaching an object will add the object to the list of child object and allow for it to be destroyed
+    template <typename U, typename... Args> void attach_object(Args... args) {
+        child_objects.push_back(std::make_unique<U>(args...));
     }
-    std::unique_ptr<object> detach_object(size_t i);
-    void attach_object(std::unique_ptr<object> obj);
+    // generating an object will attach and object and also return a pointer to it.
+    // objects generated with this method cannot be destroyed until the parent is destroyed.
+    template <typename U, typename... Args> U *gen_object(Args... args) {
+        auto obj = std::make_unique<U>(args...);
+        obj->destructible = false;
+        auto obj_ptr = obj.get();
+        child_objects.push_back(std::move(obj));
+        return obj_ptr;
+    }
     virtual void update(squint::quantities::time_f dt);
     virtual void render(squint::quantities::time_f dt);
     virtual bool on_key(const key_event &event);
@@ -40,14 +49,20 @@ class object {
     virtual bool on_mouse_wheel(const mouse_scroll_event &event);
     virtual bool on_resize(const window_resize_event &event);
     virtual ~object();
+    bool disabled;
+    void destroy();
+    inline bool should_destroy() const { return destroy_flag; }
+    // remove child objects marked for destruction recursively
+    void prune();
 
   protected:
     virtual void on_enter() {}
     virtual void on_exit() {}
 
   private:
-    object *parent_object;
     std::vector<std::unique_ptr<object>> child_objects{};
+    bool destroy_flag;
+    bool destructible;
 };
 // Abstract base class of an entity in a renderer.
 //
@@ -59,16 +74,23 @@ class object {
 template <typename T> class entity : public object {
   public:
     virtual void update(squint::quantities::time_f dt) override final {
-        std::for_each(physics_systems.begin(), physics_systems.end(),
-                      [this, dt](auto &ps) { ps->update(dt, static_cast<T &>(*this)); });
-        object::update(dt);
+        if (!disabled) {
+            std::for_each(physics_systems.begin(), physics_systems.end(),
+                          [this, dt](auto &ps) { ps->update(dt, static_cast<T &>(*this)); });
+            object::update(dt);
+        }
     }
     virtual void render(squint::quantities::time_f dt) override final {
-        std::for_each(render_systems.begin(), render_systems.end(),
-                      [this, dt](auto &rs) { rs->render(dt, static_cast<T &>(*this)); });
-        object::render(dt);
+        if (!disabled) {
+            std::for_each(render_systems.begin(), render_systems.end(),
+                          [this, dt](auto &rs) { rs->render(dt, static_cast<T &>(*this)); });
+            object::render(dt);
+        }
     }
     virtual bool on_key(const key_event &event) override final {
+        if (disabled) {
+            return false;
+        }
         bool handled = std::any_of(controls_systems.rbegin(), controls_systems.rend(),
                                    [this, &event](auto &cs) { return cs->on_key(event, static_cast<T &>(*this)); });
         if (!handled) {
@@ -77,6 +99,9 @@ template <typename T> class entity : public object {
         return handled;
     }
     virtual bool on_mouse_button(const mouse_button_event &event) override final {
+        if (disabled) {
+            return false;
+        }
         bool handled = std::any_of(controls_systems.rbegin(), controls_systems.rend(), [this, &event](auto &cs) {
             return cs->on_mouse_button(event, static_cast<T &>(*this));
         });
@@ -86,6 +111,9 @@ template <typename T> class entity : public object {
         return handled;
     }
     virtual bool on_mouse_move(const mouse_move_event &event) override final {
+        if (disabled) {
+            return false;
+        }
         bool handled = std::any_of(controls_systems.rbegin(), controls_systems.rend(), [this, &event](auto &cs) {
             return cs->on_mouse_move(event, static_cast<T &>(*this));
         });
@@ -95,6 +123,9 @@ template <typename T> class entity : public object {
         return handled;
     }
     virtual bool on_mouse_wheel(const mouse_scroll_event &event) override final {
+        if (disabled) {
+            return false;
+        }
         bool handled = std::any_of(controls_systems.rbegin(), controls_systems.rend(), [this, &event](auto &cs) {
             return cs->on_mouse_wheel(event, static_cast<T &>(*this));
         });
@@ -104,6 +135,9 @@ template <typename T> class entity : public object {
         return handled;
     }
     virtual bool on_resize(const window_resize_event &event) override final {
+        if (disabled) {
+            return false;
+        }
         bool handled = std::any_of(controls_systems.rbegin(), controls_systems.rend(),
                                    [this, &event](auto &cs) { return cs->on_resize(event, static_cast<T &>(*this)); });
         if (!handled) {
@@ -111,33 +145,15 @@ template <typename T> class entity : public object {
         }
         return handled;
     }
-    template <template <class V> class U, typename... Args> void gen_controls_system(Args... args) {
-        attach_controls_system(std::make_unique<U<T>>(args...));
+    template <template <class V> class U, typename... Args> void attach_controls_system(Args... args) {
+        controls_systems.push_back(std::make_unique<U<T>>(args...));
     }
-    std::unique_ptr<object> detach_controls_system(size_t i) {
-        auto cs = std::move(controls_systems[i]);
-        controls_systems.erase(controls_systems.begin() + i);
-        return cs;
+    template <template <class V> class U, typename... Args> void attach_physics_system(Args... args) {
+        physics_systems.push_back(std::make_unique<U<T>>(args...));
     }
-    void attach_controls_system(std::unique_ptr<controls_system<T>> cs) { controls_systems.push_back(std::move(cs)); }
-    template <template <class V> class U, typename... Args> void gen_physics_system(Args... args) {
-        attach_physics_system(std::make_unique<U<T>>(args...));
+    template <template <class V> class U, typename... Args> void attach_render_system(Args... args) {
+        render_systems.push_back(std::make_unique<U<T>>(args...));
     }
-    std::unique_ptr<object> detach_physics_system(size_t i) {
-        auto ps = std::move(physics_systems[i]);
-        physics_systems.erase(physics_systems.begin() + i);
-        return ps;
-    }
-    void attach_physics_system(std::unique_ptr<physics_system<T>> ps) { physics_systems.push_back(std::move(ps)); }
-    template <template <class V> class U, typename... Args> void gen_render_system(Args... args) {
-        attach_render_system(std::make_unique<U<T>>(args...));
-    }
-    std::unique_ptr<object> detach_render_system(size_t i) {
-        auto rs = std::move(render_systems[i]);
-        render_systems.erase(render_systems.begin() + i);
-        return rs;
-    }
-    void attach_render_system(std::unique_ptr<render_system<T>> rs) { render_systems.push_back(std::move(rs)); }
 
   private:
     // destructor is private and T is a friend of entity<T>. This enforces use of CTRP for this class

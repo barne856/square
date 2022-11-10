@@ -4,8 +4,10 @@
 namespace square {
 
 void renderer::run_step() {
-    if (active_object) {
+    if (active_object && !active_object->disabled) {
         activate_context();
+        // remove objects marked for destruction
+        active_object->prune();
         poll_events();
         static auto t1 = std::chrono::high_resolution_clock::now();
         auto t2 = std::chrono::high_resolution_clock::now();

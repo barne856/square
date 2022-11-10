@@ -23,6 +23,9 @@ template <material_like T> class material_render_system : public render_system<T
                 s->activate();
                 s->upload_mat4("projection", mat.get_camera()->get_projection_matrix());
                 s->upload_mat4("view", mat.get_camera()->get_view_matrix());
+                for (const auto &mesh : mat.get_meshes()) {
+                    mesh->draw(&mat);
+                }
             }
         }
     }
@@ -30,7 +33,7 @@ template <material_like T> class material_render_system : public render_system<T
 // A material is an entitiy containing child entities that should be rendered with the same material.
 class material : public entity<material> {
   public:
-    material(const camera *cam) : cam(cam) { gen_render_system<material_render_system>(); }
+    material(const camera *cam) : cam(cam) { attach_render_system<material_render_system>(); }
     inline shader *get_shader() { return material_shader.get(); }
     inline const camera *get_camera() const { return cam; }
     void set_model(const transform *model) {
@@ -38,10 +41,12 @@ class material : public entity<material> {
             material_shader->upload_mat4("model", model->get_transformation_matrix());
         }
     }
+    inline std::vector<std::unique_ptr<mesh>> &get_meshes() { return meshes; }
 
   protected:
     const camera *cam;
     std::unique_ptr<shader> material_shader;
+    std::vector<std::unique_ptr<mesh>> meshes;
 };
 } // namespace square
 #endif

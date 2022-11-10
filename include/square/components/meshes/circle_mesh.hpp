@@ -16,7 +16,6 @@ class circle_mesh : public simple_mesh {
     // direction
     // position and normals are supported
     circle_mesh(int sides, float radius) : simple_mesh(draw_method::TRIANGLE_FAN, index_type::NONE) {
-        auto the_renderer = app::instance().active_renderer();
         // geometry
         std::vector<circle_vertex> geom;
         geom.reserve(sides + 2);
@@ -26,12 +25,13 @@ class circle_mesh : public simple_mesh {
             geom.push_back({{radius * cos(a), radius * sin(a)}, {0.0f, 0.0f, 1.0f}});
         }
         geom.push_back({{radius, 0.0f}, {0.0f, 0.0f, 1.0f}});
-        add_vertex_buffer(the_renderer->gen_buffer<circle_vertex>(geom,
-                                                                  {
-                                                                      {buffer_attribute_type::POSITION_2D, "position"},
-                                                                      {buffer_attribute_type::NORMAL, "normal"},
-                                                                  },
-                                                                  buffer_access_type::STATIC));
+        add_vertex_buffer(
+            app::renderer()->gen_buffer<circle_vertex>(geom,
+                                                       {
+                                                           {buffer_attribute_type::POSITION_2D, "position"},
+                                                           {buffer_attribute_type::NORMAL, "normal"},
+                                                       },
+                                                       buffer_access_type::STATIC));
     }
 };
 } // namespace square

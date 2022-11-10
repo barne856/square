@@ -16,9 +16,8 @@ class basic_color : public material {
     void set_color(const squint::fvec4 &color) { get_shader()->upload_vec4("u_color", color); }
     void on_enter() override {
         // we need to construct the shader here since we need the rendering API to be loaded first
-        // material_shader = std::move(app::instance().active_renderer()->gen_shader("../shaders/basic_color"));
-        material_shader = std::move(app::instance().active_renderer()->gen_shader({{shader_type::VERTEX_SHADER,
-                                                                                    R"(
+        material_shader = std::move(app::renderer()->gen_shader("basic_color", {{shader_type::VERTEX_SHADER,
+                                                                                 R"(
 #version 450
 
 in vec4 position;        // raw mesh model vertices
@@ -36,8 +35,8 @@ void main() {
   }
 }
           )"},
-                                                                                   {shader_type::FRAGMENT_SHADER,
-                                                                                    R"(
+                                                                                {shader_type::FRAGMENT_SHADER,
+                                                                                 R"(
 #version 450
 
 out vec4 color;

@@ -24,7 +24,7 @@ requires solid_color_like<T>
 class solid_color_render_system : public render_system<T> {
   public:
     void render(time_f dt, T &entity) const override {
-        app::instance().active_renderer()->clear_color_buffer({entity.r, entity.g, 0.f, 1.f});
+        app::renderer()->clear_color_buffer({entity.r, entity.g, 0.f, 1.f});
     }
 };
 
@@ -48,7 +48,7 @@ class switch_color_controls_system : public controls_system<T> {
             entity.g = std::max(0.0f, entity.g - 0.1f);
             return true;
         } else if (event == key_event::ESCAPE_DOWN) {
-            app::instance().active_renderer()->exit();
+            app::renderer()->exit();
             return true;
         }
         return false;
@@ -92,10 +92,10 @@ int main() {
     // attach two renderers to the app. This will create two windows each with
     // their own controls and rendering systems.
     sdl_gl_renderer::init();
-    app::instance().gen_renderer<solid_color_renderer>();
-    app::instance().gen_renderer<solid_color_renderer>();
+    app::gen_renderer<solid_color_renderer>();
+    app::gen_renderer<solid_color_renderer>();
     // run the app
-    app::instance().run();
+    app::run();
     sdl_gl_renderer::quit();
     return 0;
 }

@@ -35,7 +35,7 @@ concept projectable = requires(T t) {
 template <projectable T> class camera_resize_controller : public controls_system<T> {
   public:
     virtual bool on_resize(const window_resize_event &event, T &cam) const override final {
-        app::instance().active_renderer()->set_viewport(0, 0, event.width, event.height);
+        app::renderer()->set_viewport(0, 0, event.width, event.height);
         float aspect = float(event.width) / float(event.height);
         cam.set_aspect(aspect);
         cam.recalculate_projection();
@@ -56,7 +56,7 @@ template <projectable T> class camera_resize_controller : public controls_system
 class camera : public entity<camera>, public transform {
   public:
     camera(projection_type type, float aspect) : type(type), aspect(aspect) {
-        gen_controls_system<camera_resize_controller>();
+        attach_controls_system<camera_resize_controller>();
         recalculate_projection();
     }
     void recalculate_projection() {

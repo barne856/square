@@ -10,8 +10,10 @@
 namespace square {
 
 class sdl_gl_renderer : public renderer {
+    friend class app;
 
   public:
+    virtual ~sdl_gl_renderer();
     static void init();
     static void quit();
     virtual void clear_color_buffer(squint::fvec4 color) override final;
@@ -20,8 +22,10 @@ class sdl_gl_renderer : public renderer {
     virtual void enable_face_culling(bool enable) override final;
     virtual void enable_depth_testing(bool enable) override final;
     virtual void enable_blending(bool enable) override final;
-    virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) override final;
-    virtual std::unique_ptr<shader> gen_shader(const std::vector<shader_src> &shader_sources) override final;
+    virtual std::unique_ptr<shader> gen_shader(const std::string &name,
+                                               const std::filesystem::path &shader_src_directory) override final;
+    virtual std::unique_ptr<shader> gen_shader(const std::string &name,
+                                               const std::vector<shader_src> &shader_sources) override final;
     virtual std::unique_ptr<buffer> gen_buffer(const void *data, const size_t size_in_bytes,
                                                const buffer_format &format,
                                                const buffer_access_type type) override final;
@@ -49,6 +53,7 @@ class sdl_gl_renderer : public renderer {
     SDL_GLContext glcontext = nullptr;
     SDL_Window *window = nullptr;
     unsigned int window_id = 0;
+    std::unordered_map<std::string, GLint> shader_name_binding_cache;
 };
 class sdl_gl_shader : public shader {
 
@@ -56,6 +61,7 @@ class sdl_gl_shader : public shader {
     virtual void activate() override final;
     sdl_gl_shader(const std::filesystem::path &shader_src_folder);
     sdl_gl_shader(const std::vector<shader_src> &shader_sources);
+    sdl_gl_shader(GLint program) : program(program) {}
     virtual ~sdl_gl_shader();
     virtual void upload_mat4(const std::string &name, const squint::fmat4 &value,
                              bool suppress_warnings = false) override final;

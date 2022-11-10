@@ -13,7 +13,6 @@ class cylinder_mesh : public simple_mesh {
     // sides The sides used to approximate the cylinder.
     cylinder_mesh(float start_angle, float end_angle, int sides)
         : simple_mesh(draw_method::TRIANGLES, index_type::UNSIGNED_INT) {
-        auto the_renderer = app::instance().active_renderer();
         std::vector<float> data;
         std::vector<unsigned int> indices;
 
@@ -100,14 +99,14 @@ class cylinder_mesh : public simple_mesh {
             indices.push_back(3 * (sides + 1) + i + 3);
         }
 
-        add_vertex_buffer(the_renderer->gen_buffer<float>(data,
-                                                          {
-                                                              {buffer_attribute_type::POSITION_3D, "position"},
-                                                              {buffer_attribute_type::NORMAL, "normal"},
-                                                          },
-                                                          buffer_access_type::STATIC));
-        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
-                                                                buffer_access_type::STATIC));
+        add_vertex_buffer(app::renderer()->gen_buffer<float>(data,
+                                                             {
+                                                                 {buffer_attribute_type::POSITION_3D, "position"},
+                                                                 {buffer_attribute_type::NORMAL, "normal"},
+                                                             },
+                                                             buffer_access_type::STATIC));
+        set_index_buffer(app::renderer()->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
+                                                                   buffer_access_type::STATIC));
     }
 };
 } // namespace square

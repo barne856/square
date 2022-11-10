@@ -24,7 +24,7 @@ class simple_mesh : public mesh {
     // construct a mesh of a certain draw_method and index_type. A vertex_input_assembly is used to manage the state of
     // the vertex inputs to a bound shader.
     simple_mesh(draw_method method, index_type type = index_type::NONE)
-        : method(method), input_assembly(app::instance().active_renderer()->gen_vertex_input_assembly(type)) {}
+        : method(method), input_assembly(app::renderer()->gen_vertex_input_assembly(type)) {}
     // once a shader is bound, the input assembly is updated to bind the vertex attribs to the shader inputs.
     // The bound shader must be activated before draw() is called.
     virtual void bind_material(material *mat) override final { input_assembly->bind_shader(mat->get_shader()); }
@@ -35,12 +35,12 @@ class simple_mesh : public mesh {
         this->input_assembly->add_vertex_buffer(std::move(vertex_buffer));
     }
     // Draws the mesh using the bound shader. The shader must be active and must be the shader that was bound.
-    virtual void draw(material *mat) override final { app::instance().active_renderer()->draw_mesh(this, this, mat); }
+    virtual void draw(material *mat) override final { app::renderer()->draw_mesh(this, this, mat); }
     // Draws the mesh using the bound shader and a parent transform. The shader must be active.
     virtual void draw(material *mat, const transform *parent) override final {
         transform model;
         model.set_transformation_matrix(parent->get_transformation_matrix() * this->get_transformation_matrix());
-        app::instance().active_renderer()->draw_mesh(this, &model, mat);
+        app::renderer()->draw_mesh(this, &model, mat);
     }
     inline const vertex_input_assembly *get_input_assembly() const { return input_assembly.get(); }
     inline vertex_input_assembly *get_input_assembly() { return input_assembly.get(); }
@@ -57,9 +57,9 @@ class instanced_mesh : public mesh {
     // instance count starts at zero and you must push and pop instances to change the instance count
     instanced_mesh(std::unique_ptr<simple_mesh> base_mesh, unsigned int max_instance_count)
         : base_mesh(std::move(base_mesh)), max_instance_count(max_instance_count), instance_count(0) {
-        transforms = std::move(app::instance().active_renderer()->gen_buffer(
-            nullptr, sizeof(transform) * max_instance_count, {{buffer_attribute_type::STORAGE, "models"}},
-            buffer_access_type::READ_WRITE));
+        transforms = std::move(app::renderer()->gen_buffer(nullptr, sizeof(transform) * max_instance_count,
+                                                           {{buffer_attribute_type::STORAGE, "models"}},
+                                                           buffer_access_type::READ_WRITE));
     }
     // once a shader is bound, the input assembly is updated to bind the vertex attribs to the shader inputs.
     // The bound shader must be activated before draw() is called.
@@ -72,14 +72,14 @@ class instanced_mesh : public mesh {
     virtual void draw(material *mat) override final {
         transform model;
         model.set_transformation_matrix(this->get_transformation_matrix() * base_mesh->get_transformation_matrix());
-        app::instance().active_renderer()->draw_mesh(this, &model, mat, instance_count);
+        app::renderer()->draw_mesh(this, &model, mat, instance_count);
     }
     // Draws the mesh using the bound shader and a parent transform. The shader must be active.
     virtual void draw(material *mat, const transform *parent) override final {
         transform model;
         model.set_transformation_matrix(parent->get_transformation_matrix() * this->get_transformation_matrix() *
                                         base_mesh->get_transformation_matrix());
-        app::instance().active_renderer()->draw_mesh(this, &model, mat, instance_count);
+        app::renderer()->draw_mesh(this, &model, mat, instance_count);
     }
     inline const vertex_input_assembly *get_input_assembly() const {
         if (base_mesh) {

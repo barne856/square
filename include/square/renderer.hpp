@@ -245,7 +245,6 @@ struct renderer_properties {
     bool vsync = false;
     cursor_type cursor = cursor_type::ENABLED;
     debug_mode debug = debug_mode::NOTIFICATION;
-    bool running = true;
     squint::quantities::time_f fixed_dt{1.f / 60.f};
 };
 // forward declaring these so we can work with them in the renderer and app classes
@@ -266,7 +265,6 @@ class renderer : public object {
     friend class app;
 
   public:
-    inline void exit() { properties.running = false; }
     // api commands (mostly self explanitory see documentaiton for the rendering api for details on that api)
     virtual void clear_color_buffer(squint::fvec4 color) = 0;
     virtual void wireframe_mode(bool enable) = 0;
@@ -274,8 +272,10 @@ class renderer : public object {
     virtual void enable_face_culling(bool enable) = 0;
     virtual void enable_depth_testing(bool enable) = 0;
     virtual void enable_blending(bool enable) = 0;
-    virtual std::unique_ptr<shader> gen_shader(const std::filesystem::path &shader_src_directory) = 0;
-    virtual std::unique_ptr<shader> gen_shader(const std::vector<shader_src> &shader_sources) = 0;
+    virtual std::unique_ptr<shader> gen_shader(const std::string &name,
+                                               const std::filesystem::path &shader_src_directory) = 0;
+    virtual std::unique_ptr<shader> gen_shader(const std::string &name,
+                                               const std::vector<shader_src> &shader_sources) = 0;
     inline const renderer_properties &get_properties() const { return properties; }
     template <typename T>
     std::unique_ptr<buffer> gen_buffer(const std::vector<T> &data, const buffer_format &format,
@@ -344,39 +344,27 @@ class app {
     }
     // get the active renderer. This is used by entities inside a renderer so that they can run commands from the
     // renderer they are being rendered with
-    inline renderer *active_renderer() { return active_renderer_ptr; }
-    inline const std::vector<std::unique_ptr<renderer>> &get_renderers() { return renderers; }
-    template <typename U, typename... Args> void gen_renderer(Args... args) {
-        attach_renderer(std::make_unique<U>(args...));
-    }
-    std::unique_ptr<renderer> detach_renderer(size_t i) {
-        auto r = std::move(renderers[i]);
-        active_renderer_ptr = r.get();
-        r->on_exit();
-        r->destroy_context();
-        renderers.erase(renderers.begin() + i);
-        active_renderer_ptr = nullptr;
-        return r;
-    }
-    // all attached renderers will be rendered
-    void attach_renderer(std::unique_ptr<renderer> r) {
-        active_renderer_ptr = r.get();
+    static renderer *renderer() { return instance().active_renderer_ptr; }
+    static const std::vector<std::unique_ptr<square::renderer>> &get_renderers() { return instance().renderers; }
+    template <typename U, typename... Args> static void attach_renderer(Args... args) {
+        auto r = std::make_unique<U>(args...);
+        instance().active_renderer_ptr = r.get();
         r->create_context();
-        r->on_enter();
-        renderers.push_back(std::move(r));
-        active_renderer_ptr = nullptr;
+        r->on_enter(); // calling on_enter() instead of on_load() since we only want one child loaded at a time
+        instance().renderers.push_back(std::move(r));
+        instance().active_renderer_ptr = nullptr;
     }
     // main program loop. This will loop as long as there are renderers attached.
     // renderers are automatically detached if an exit signal is sent from a renderer
-    void run() {
-        while (renderers.size()) {
+    static void run() {
+        while (instance().renderers.size()) {
             int i = 0;
             bool renderer_exit = false;
-            for (auto &r : renderers) {
-                if (r->properties.running) {
-                    active_renderer_ptr = r.get();
+            for (auto &r : instance().renderers) {
+                if (!r->should_destroy()) {
+                    instance().active_renderer_ptr = r.get();
                     r->run_step();
-                    active_renderer_ptr = nullptr;
+                    instance().active_renderer_ptr = nullptr;
                 } else {
                     renderer_exit = true;
                     break;
@@ -384,7 +372,13 @@ class app {
                 i++;
             }
             if (renderer_exit) {
-                detach_renderer(i);
+                auto r = std::move(instance().renderers[i]);
+                instance().active_renderer_ptr = r.get();
+                r->load_object(nullptr); // unload active object
+                r->on_exit();
+                r->destroy_context();
+                instance().renderers.erase(instance().renderers.begin() + i);
+                instance().active_renderer_ptr = nullptr;
             }
         }
     }

@@ -15,7 +15,6 @@ class torus_mesh : public simple_mesh {
     torus_mesh(unsigned int n_segments, unsigned int n_rings, float inner_radius, float outer_radius)
         : simple_mesh(draw_method::TRIANGLE_STRIP, index_type::UNSIGNED_INT), r(outer_radius), R(inner_radius),
           q(n_segments), p(n_rings) {
-        auto the_renderer = app::instance().active_renderer();
         std::vector<torus_vertex> vertex_data;
         std::vector<unsigned int> indices;
 
@@ -49,16 +48,17 @@ class torus_mesh : public simple_mesh {
             indices.push_back(static_cast<unsigned int>((i + q + 1) % n_vertices));
         }
 
-        add_vertex_buffer(the_renderer->gen_buffer<torus_vertex>(vertex_data,
-                                                                 {
-                                                                     {buffer_attribute_type::POSITION_3D, "position"},
-                                                                     {buffer_attribute_type::NORMAL, "normal"},
-                                                                     {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
-                                                                 },
-                                                                 buffer_access_type::STATIC));
+        add_vertex_buffer(
+            app::renderer()->gen_buffer<torus_vertex>(vertex_data,
+                                                      {
+                                                          {buffer_attribute_type::POSITION_3D, "position"},
+                                                          {buffer_attribute_type::NORMAL, "normal"},
+                                                          {buffer_attribute_type::TEXTURE_MAP, "tex_coords"},
+                                                      },
+                                                      buffer_access_type::STATIC));
 
-        set_index_buffer(the_renderer->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
-                                                                buffer_access_type::STATIC));
+        set_index_buffer(app::renderer()->gen_buffer<unsigned int>(indices, {{buffer_attribute_type::INDEX_INT, ""}},
+                                                                   buffer_access_type::STATIC));
     }
 
   private:

@@ -212,6 +212,11 @@ void GLAPIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GL
                   << debug_severity_string(severity) << " - " << message << std::endl;
     }
 }
+sdl_gl_renderer::~sdl_gl_renderer() {
+    for (const auto &[name, program] : shader_name_binding_cache) {
+        glDeleteProgram(program);
+    }
+}
 void sdl_gl_renderer::init() {
     SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
     SDL_Init(SDL_INIT_VIDEO); // Init SDL2, VIDEO also inits EVENTS
@@ -240,6 +245,9 @@ void sdl_gl_renderer::create_context() {
 
     window_id = SDL_GetWindowID(window);
     glcontext = SDL_GL_CreateContext(window);
+    if (properties.vsync) {
+        SDL_GL_SetSwapInterval(1);
+    }
     GLenum err = glewInit();
     if (GLEW_OK != err) {
         throw std::runtime_error("Error GLEW failed to initalize:\n" +
@@ -276,7 +284,7 @@ void sdl_gl_renderer::poll_events() {
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_CLOSE:
-                    properties.running = false;
+                    destroy();
                     break;
                 case SDL_WINDOWEVENT_RESIZED:
                     // properties.window_width = static_cast<uint64_t>(event.window.data1);
@@ -965,7 +973,7 @@ void sdl_gl_renderer::poll_events() {
                 }
                 break;
             case SDL_QUIT:
-                properties.running = false;
+                destroy();
             default:
                 break;
             }
@@ -1022,11 +1030,29 @@ void sdl_gl_renderer::enable_blending(bool enable) {
         glDisable(GL_BLEND);
     }
 }
-std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::filesystem::path &shader_src_directory) {
-    return std::make_unique<sdl_gl_shader>(shader_src_directory);
+std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::string &name,
+                                                    const std::filesystem::path &shader_src_directory) {
+    // There is no need to recompile the shader if it has already been compiled, so we just construct it from the
+    // existing program id
+    if (shader_name_binding_cache.find(name) == shader_name_binding_cache.end()) {
+        auto new_shader = std::make_unique<sdl_gl_shader>(shader_src_directory);
+        shader_name_binding_cache[name] = new_shader->get_id();
+        return new_shader;
+    } else {
+        return std::make_unique<sdl_gl_shader>(shader_name_binding_cache[name]);
+    }
 }
-std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::vector<shader_src> &shader_sources) {
-    return std::make_unique<sdl_gl_shader>(shader_sources);
+std::unique_ptr<shader> sdl_gl_renderer::gen_shader(const std::string &name,
+                                                    const std::vector<shader_src> &shader_sources) {
+    // There is no need to recompile the shader if it has already been compiled, so we just construct it from the
+    // existing program id
+    if (shader_name_binding_cache.find(name) == shader_name_binding_cache.end()) {
+        auto new_shader = std::make_unique<sdl_gl_shader>(shader_sources);
+        shader_name_binding_cache[name] = new_shader->get_id();
+        return new_shader;
+    } else {
+        return std::make_unique<sdl_gl_shader>(shader_name_binding_cache[name]);
+    }
 }
 std::unique_ptr<buffer> sdl_gl_renderer::gen_buffer(const void *data, const size_t size_in_bytes,
                                                     const buffer_format &format, const buffer_access_type type) {
@@ -1097,7 +1123,8 @@ sdl_gl_shader::sdl_gl_shader(const std::vector<shader_src> &shader_sources) {
     program = create_program(shader_sources);
 }
 sdl_gl_shader::~sdl_gl_shader() {
-    glDeleteProgram(program); // Silently ignored if program is 0
+    // program is deleted in the renderer destructor
+    // glDeleteProgram(program); // Silently ignored if program is 0
 }
 void sdl_gl_shader::activate() { glUseProgram(program); }
 shader_src sdl_gl_shader::read_shader(const std::filesystem::path &shader_src_filepath) {
