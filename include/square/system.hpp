@@ -1,6 +1,7 @@
 #ifndef SQUARE_SYSTEM
 #define SQUARE_SYSTEM
-#include "squint/quantity.hpp"
+#include <cstdint>
+import squint.quantity;
 namespace square {
 
 // event callback types

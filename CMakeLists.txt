@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.28)
 
 ## Project Settings
 project(square)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -m64")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++abi")
 INCLUDE(FindPkgConfig)
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
 PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
@@ -13,6 +15,15 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 include_directories("./include" "./ext/SQUINT/include" ${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS})
 set(BUILD_TESTING OFF) # disable Catch2 self tests
+
+add_library(squint)
+target_sources(squint PUBLIC FILE_SET CXX_MODULES FILES
+  ext/SQUINT/include/squint/dimension.cpp
+  ext/SQUINT/include/squint/linalg.cpp
+  ext/SQUINT/include/squint/optimize.cpp
+  ext/SQUINT/include/squint/quantity.cpp
+  ext/SQUINT/include/squint/tensor.cpp
+)
 
 if(MSVC)
 add_definitions(
@@ -31,7 +42,7 @@ src/sdl_gl.cpp
 src/components/transform.cpp
 )
 add_library(square ${LIB_SRC})
-target_link_libraries(square ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW)
+target_link_libraries(square ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} OpenGL::GL GLEW::GLEW squint)
 
 ## Build Sample Apps
 add_executable(solid_color sample_apps/solid_color/solid_color.cpp)

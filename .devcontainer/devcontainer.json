@@ -1,0 +1,40 @@
+{
+	"name": "C++",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	// prevent git dubious ownership
+	"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"xaver.clang-format",
+				"GitHub.copilot",
+				"GitHub.copilot-chat",
+				"ms-vscode.cmake-tools"
+			]
+		}
+	},
+	"runArgs": [
+		"--volume=${localWorkspaceFolder}:/workspaces/${localWorkspaceFolderBasename}:Z", // SE Linux permissions workaround
+		"--gpus", // enable GPU support
+		"all", // enable all GPUs
+		// --runtime=nvidia may be needed in linux for vulkan to work with GPU?
+		// "--runtime", // enable GPU support https://github.com/NVIDIA/nvidia-container-toolkit/issues/16#issuecomment-1290439475
+		// "nvidia", // enable GPU support
+		"--add-host", // enable X11 forwarding
+		"host.docker.internal:host-gateway" // enable X11 forwarding
+	],
+	"remoteEnv": {
+		"DISPLAY": "host.docker.internal:0" // enable X11 forwarding
+	},
+	// SE Linux permissions workaround
+	"workspaceMount": "",
+	"remoteUser": "vscode",
+	"containerUser": "vscode"
+}

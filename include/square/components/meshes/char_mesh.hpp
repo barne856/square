@@ -7,7 +7,7 @@
 #include "square/components/meshes/cylinder_mesh.hpp"
 #include "square/components/meshes/line_mesh.hpp"
 #include "square/components/meshes/square_mesh.hpp"
-#include "squint/linalg.hpp"
+import squint.linalg;
 
 // Standard Library
 #include <unordered_map>

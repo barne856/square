@@ -1,7 +1,7 @@
 #ifndef SQUARE_COLOR
 #define SQUARE_COLOR
 
-#include "squint/tensor.hpp"
+import squint.tensor;
 #include <cstdio>
 #include <string>
 

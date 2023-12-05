@@ -2,8 +2,8 @@
 #define SQUARE_TRANSFORM
 
 #include "square/entity.hpp"
-#include "squint/linalg.hpp"
-#include "squint/quantity.hpp"
+import squint.linalg;
+import squint.quantity;
 #include <concepts>
 
 namespace square {

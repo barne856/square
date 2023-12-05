@@ -1,7 +1,7 @@
 #ifndef SQUARE_CIRCLE_MESH
 #define SQUARE_CIRCLE_MESH
 #include "square/components/mesh.hpp"
-#include "squint/quantity.hpp"
+import squint.quantity;
 
 namespace square {
 // constructs a circle mesh.

@@ -1,7 +1,7 @@
 #ifndef SQUARE_SQUARE_MESH
 #define SQUARE_SQUARE_MESH
 #include "square/components/mesh.hpp"
-#include "squint/quantity.hpp"
+import squint.quantity;
 
 namespace square {
 // constructs a square mesh. Scale the mesh's transform to produce a general rectilinear quadtrangle
