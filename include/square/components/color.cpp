@@ -1,11 +1,10 @@
-#ifndef SQUARE_COLOR
-#define SQUARE_COLOR
-
-import squint.tensor;
+module;
 #include <cstdio>
 #include <string>
+export module squint:color;
+import squint;
 
-namespace square {
+export namespace square {
 class color {
   public:
     static squint::fvec4 parse_hexcode(const std::string &code) {
@@ -15,5 +14,3 @@ class color {
     }
 };
 } // namespace square
-
-#endif

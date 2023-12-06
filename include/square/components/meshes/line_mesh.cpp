@@ -1,9 +1,7 @@
-#ifndef SQUARE_LINE_MESH
-#define SQUARE_LINE_MESH
+export module square:line_mesh;
+import :mesh;
 
-#include "square/components/mesh.hpp"
-
-namespace square {
+export namespace square {
 // a line with only geometry, no normals or texture coordinates
 class line_mesh : public simple_mesh {
   public:
@@ -32,5 +30,3 @@ class line_mesh : public simple_mesh {
     }
 };
 } // namespace square
-
-#endif

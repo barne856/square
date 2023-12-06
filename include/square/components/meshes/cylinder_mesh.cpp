@@ -1,9 +1,7 @@
-#ifndef SQUARE_CYLINDER_MESH
-#define SQUARE_CYLINDER_MESH
+export module square:cylinder_mesh;
+import :mesh;
 
-#include "square/components/mesh.hpp"
-
-namespace square {
+export namespace square {
 class cylinder_mesh : public simple_mesh {
   public:
     // Construct a new cylinder mesh with vertices and normals.
@@ -111,4 +109,3 @@ class cylinder_mesh : public simple_mesh {
 };
 } // namespace square
 
-#endif

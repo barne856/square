@@ -1,8 +1,8 @@
-#ifndef SQUARE_SYSTEM
-#define SQUARE_SYSTEM
+module;
 #include <cstdint>
-import squint.quantity;
-namespace square {
+export module square:system;
+import squint;
+export namespace square {
 
 // event callback types
 struct mouse_scroll_event {
@@ -265,4 +265,3 @@ template <typename T> class controls_system {
 };
 
 } // namespace square
-#endif

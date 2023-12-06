@@ -1,9 +1,8 @@
-#ifndef SQUARE_SQUARE_MESH
-#define SQUARE_SQUARE_MESH
-#include "square/components/mesh.hpp"
-import squint.quantity;
+export module square:square_mesh;
+import :mesh;
+import squint;
 
-namespace square {
+export namespace square {
 // constructs a square mesh. Scale the mesh's transform to produce a general rectilinear quadtrangle
 class square_mesh : public simple_mesh {
     struct quad_vertex {
@@ -52,4 +51,3 @@ class square_mesh : public simple_mesh {
     }
 };
 } // namespace square
-#endif

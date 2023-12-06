@@ -1,8 +1,7 @@
-#ifndef SQUARE_SPHERE_MESH
-#define SQUARE_SPHERE_MESH
-#include "square/components/mesh.hpp"
+export module square:sphere_mesh;
+import :mesh;
 
-namespace square {
+export namespace square {
 
 // constructs a sphere mesh from either a lat-long grid or a tessellated icosahedron
 class sphere_mesh : public simple_mesh {
@@ -205,4 +204,3 @@ class sphere_mesh : public simple_mesh {
     }
 };
 } // namespace square
-#endif

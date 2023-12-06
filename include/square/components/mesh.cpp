@@ -1,11 +1,10 @@
-#ifndef SQUARE_MESH
-#define SQUARE_MESH
-#include "square/components/transform.hpp"
-#include "square/entities/material.hpp"
-#include "square/entity.hpp"
-#include "square/renderer.hpp"
+export module square:mesh;
+import :transform;
+import :material;
+import :entity;
+import :renderer;
 
-namespace square {
+export namespace square {
 // Abstract base class for all mesh types. All meshes are drawable and can be bound to a shader
 class mesh : public transform {
   public:
@@ -148,4 +147,3 @@ class composite_mesh : public mesh {
 };
 
 } // namespace square
-#endif

@@ -1,9 +1,7 @@
-#ifndef SQUARE_CUBE_MESH
-#define SQUARE_CUBE_MESH
+export module square:cube_mesh;
+import :mesh;
 
-#include "square/components/mesh.hpp"
-
-namespace square {
+export namespace square {
 class cube_mesh : public simple_mesh {
   public:
     // Construct a mesh of a 3D cube. scale is the length of each face of the cube. Contains normals and vertices.
@@ -137,5 +135,3 @@ class cube_mesh : public simple_mesh {
     }
 };
 } // namespace square
-
-#endif

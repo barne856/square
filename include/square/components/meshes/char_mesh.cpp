@@ -1,19 +1,17 @@
-#ifndef SQUARE_CHAR_MESH
-#define SQUARE_CHAR_MESH
-
-#include "square/components/mesh.hpp"
-#include "square/components/meshes/circle_mesh.hpp"
-#include "square/components/meshes/cube_mesh.hpp"
-#include "square/components/meshes/cylinder_mesh.hpp"
-#include "square/components/meshes/line_mesh.hpp"
-#include "square/components/meshes/square_mesh.hpp"
-import squint.linalg;
-
+module;
 // Standard Library
 #include <unordered_map>
 #include <vector>
+export module square:char_mesh;
+import :mesh;
+import :circle_mesh;
+import :cube_mesh;
+import :cylinder_mesh;
+import :line_mesh;
+import :square_mesh;
+import squint;
 
-namespace square {
+export namespace square {
 /**
  * Creates a renderable text mesh containing a string of characters
  * contructed from lines.
@@ -356,4 +354,3 @@ class char_mesh : public composite_mesh {
     }
 };
 } // namespace square
-#endif

@@ -1,12 +1,13 @@
-#ifndef SQUARE_RENDERER
-#define SQUARE_RENDERER
-#include "square/components/transform.hpp"
-#include "square/entity.hpp"
+module;
 #include <cstring>
 #include <filesystem>
 #include <memory>
+#include <chrono>
+export module square:renderer;
+import :transform;
+import :entity;
 
-namespace square {
+export namespace square {
 enum class cursor_type {
     DISABLED, // cursor will not be shown and only relative positions are returned from event callbacks
     ENABLED,  // cursor will be shown
@@ -461,5 +462,37 @@ class vertex_input_assembly {
     std::unique_ptr<buffer> index_buffer;
     index_type type;
 };
+
+void renderer::run_step() {
+    if (active_object && !active_object->disabled) {
+        activate_context();
+        // remove objects marked for destruction
+        active_object->prune();
+        poll_events();
+        static auto t1 = std::chrono::high_resolution_clock::now();
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::duration<float>>(t2 - t1);
+        squint::quantities::time_f dt{time_span.count()};
+        t1 = t2;
+        update(properties.fixed_dt);
+        render(dt);
+        swap_buffers();
+    }
+}
+void renderer::update(squint::quantities::time_f dt) { active_object->update(dt); }
+void renderer::render(squint::quantities::time_f dt) { active_object->render(dt); }
+bool renderer::on_key(const key_event &event) { return active_object->on_key(event); }
+bool renderer::on_mouse_button(const mouse_button_event &event) { return active_object->on_mouse_button(event); }
+bool renderer::on_mouse_move(const mouse_move_event &event) { return active_object->on_mouse_move(event); }
+bool renderer::on_mouse_wheel(const mouse_scroll_event &event) { return active_object->on_mouse_wheel(event); }
+bool renderer::on_resize(const window_resize_event &event) { return active_object->on_resize(event); }
+void renderer::load_object(object *obj) {
+    if (active_object) {
+        active_object->on_unload();
+    }
+    active_object = obj;
+    if (active_object) {
+        active_object->on_load();
+    }
+}
 } // namespace square
-#endif

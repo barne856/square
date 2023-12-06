@@ -1,12 +1,10 @@
-#ifndef SQUARE_MATERIAL
-#define SQUARE_MATERIAL
+export module square:material;
+import :camera;
+import :entity;
+import :renderer;
+import :system;
 
-#include "square/entities/camera.hpp"
-#include "square/entity.hpp"
-#include "square/renderer.hpp"
-#include "square/system.hpp"
-
-namespace square {
+export namespace square {
 // concept for templated systems
 template <typename T>
 concept material_like = requires(T t) {
@@ -49,4 +47,3 @@ class material : public entity<material> {
     std::vector<std::unique_ptr<mesh>> meshes;
 };
 } // namespace square
-#endif

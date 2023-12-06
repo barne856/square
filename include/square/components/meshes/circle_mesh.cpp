@@ -1,9 +1,8 @@
-#ifndef SQUARE_CIRCLE_MESH
-#define SQUARE_CIRCLE_MESH
-#include "square/components/mesh.hpp"
-import squint.quantity;
+export module square:circle_mesh;
+import :mesh;
+import squint;
 
-namespace square {
+export namespace square {
 // constructs a circle mesh.
 class circle_mesh : public simple_mesh {
     struct circle_vertex {
@@ -35,4 +34,3 @@ class circle_mesh : public simple_mesh {
     }
 };
 } // namespace square
-#endif

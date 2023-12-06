@@ -1,12 +1,11 @@
-#ifndef SQUARE_CAMERA
-#define SQUARE_CAMERA
-
-#include "square/components/transform.hpp"
-#include "square/entity.hpp"
-#include "square/renderer.hpp"
+module;
 #include <concepts>
+export module square:camera;
+import :transform;
+import :entity;
+import :renderer;
 
-namespace square {
+export namespace square {
 enum class projection_type { PERSPECTIVE, ORTHOGRAPHIC };
 // concept for templated systems
 template <typename T>
@@ -101,4 +100,3 @@ class camera : public entity<camera>, public transform {
     float persp_far = 10.0f;
 };
 } // namespace square
-#endif
