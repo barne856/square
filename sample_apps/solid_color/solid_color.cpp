@@ -1,51 +1,31 @@
-// A sample app displaying solid colors in two windows.
-// This app will create two windows each displaing solid colors that
-// are combinations of red and green. Each window can be controlled separately
-// with the arrow keys.
+// A sample app displaying a solid color on one window to illustrate the .
 import square;
 import squint;
-#include <cmath>
-#include <concepts>
-#include <algorithm>
 
 using namespace square;
 using namespace squint;
 using namespace squint::quantities;
 
+// this is the main render loop for the scene
 template <typename T> class render_main : public render_system<T> {
   public:
     void render(time_f dt, T &entity) const override {
-        // enable depth testing and face culling in this scene in case is was changed by another scene
-        app::renderer()->enable_depth_testing(true);
-        app::renderer()->enable_face_culling(true);
-        // We need to clear the color and depth buffer so that the scene is properly rendered each frame
         app::renderer()->clear_color_buffer(entity.bg_color);
-        app::renderer()->clear_depth_buffer();
     }
 };
 
+// This is the main scene for the app
+// It is a simple entity that has a background color
 class main_scene : public entity<main_scene> {
   public:
-    main_scene(projection_type type, float aspect) {
-        // the scene's main camera is created
-        cam = gen_object<camera>(type, aspect);
-        // we create the material here and attach all objects that will be rendered with that material
-        mat = gen_object<basic_color>(cam);
-        // generate and attach the systems
+    main_scene() {
         attach_render_system<render_main>();
     }
-    void on_enter() override {
-        position[2] = length_f::meters(5.0f);
-        cam->set_position(position);
-        cam->face_towards(origin, {0.0f, 1.0f, 0.0f});
-    }
-    tensor<length_f, 3> origin{};
-    tensor<length_f, 3> position{};
-    camera *cam;
-    basic_color *mat;
-    fvec4 bg_color = color::parse_hexcode("FEFBF3");
+    fvec4 bg_color = color::parse_hexcode("E67825");
 };
 
+// This is the main renderer for the app
+// It sets up the window and rendering context and loads the main scene
 class main_renderer : public sdl_gl_renderer {
   public:
     main_renderer() {
@@ -53,28 +33,30 @@ class main_renderer : public sdl_gl_renderer {
         properties.window_title = "untitled";
         properties.window_width = 1280;
         properties.window_height = 720;
-        properties.samples = 4;
-        float init_aspect = float(properties.window_width) / float(properties.window_height);
-        scene = gen_object<main_scene>(projection_type::PERSPECTIVE, init_aspect);
-        // std::srand(std::time(nullptr));
-        std::srand(0); // make random numbers reproducable
+        scene = gen_object<main_scene>();
     }
     void on_enter() override {
-        // load the sample scene layer
+        // load the main scene, unloaded when the renderer is detached
         load_object(scene);
     }
-    void on_exit() override { load_object(nullptr); }
     main_scene *scene;
 };
 
 int main() {
-    // first we need to initalize the renderer that will be used by the app
+    // TODO, should init() and quit() be simplified? How to handle multiple windows?
+
+    // initalize the renderer that will be used by the app.
+    // this initalizes SDL2 
     sdl_gl_renderer::init();
-    // next, we add the renderer to the app
+    // add the renderer to the app
+    // this will create the window and context, construct the renderer, and call on_enter
     app::attach_renderer<main_renderer>();
-    // and we run the app
+    // run the app
+    // this will perform the main loop, updating the scenes via all attached systems
+    // if the window is closed, the context will be destroyed, and on_exit will be called
     app::run();
     // once all renderers have been detached and the app run has ended, we clean up the renderer used by the app
+    // This destroys SDL2
     sdl_gl_renderer::quit();
     return 0;
 }

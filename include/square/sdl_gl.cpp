@@ -393,11 +393,7 @@ void GLAPIENTRY debug_message_callback(GLenum source, GLenum type, GLuint id, GL
                   << debug_severity_string(severity) << " - " << message << std::endl;
     }
 }
-sdl_gl_renderer::~sdl_gl_renderer() {
-    for (const auto &[name, program] : shader_name_binding_cache) {
-        glDeleteProgram(program);
-    }
-}
+sdl_gl_renderer::~sdl_gl_renderer() {}
 void sdl_gl_renderer::init() {
     // SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
     SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11"); // GLEW does not work on wayland yet
@@ -1168,6 +1164,9 @@ void sdl_gl_renderer::poll_events() {
     }
 }
 void sdl_gl_renderer::destroy_context() {
+    for (const auto &[name, program] : shader_name_binding_cache) {
+        glDeleteProgram(program);
+    }
     SDL_GL_DeleteContext(glcontext);
     SDL_DestroyWindow(window);
 }
@@ -1305,7 +1304,7 @@ sdl_gl_shader::sdl_gl_shader(const std::vector<shader_src> &shader_sources) {
     program = create_program(shader_sources);
 }
 sdl_gl_shader::~sdl_gl_shader() {
-    // program is deleted in the renderer destructor
+    // program is deleted in destroy_context()
     // glDeleteProgram(program); // Silently ignored if program is 0
 }
 void sdl_gl_shader::activate() { glUseProgram(program); }

@@ -18,12 +18,12 @@ set(BUILD_TESTING OFF) # disable Catch2 self tests
 
 add_library(squint)
 target_sources(squint PUBLIC FILE_SET CXX_MODULES FILES
-  ext/SQUINT/src/dimension.cpp
-  ext/SQUINT/src/linalg.cpp
-  ext/SQUINT/src/optimize.cpp
-  ext/SQUINT/src/quantity.cpp
-  ext/SQUINT/src/tensor.cpp
-  ext/SQUINT/src/squint.cpp
+  ext/squint/src/dimension.cpp
+  ext/squint/src/linalg.cpp
+  ext/squint/src/optimize.cpp
+  ext/squint/src/quantity.cpp
+  ext/squint/src/tensor.cpp
+  ext/squint/src/squint.cpp
 )
 
 if(MSVC)
@@ -34,26 +34,6 @@ add_definitions(
     -DGLEW_STATIC
 )
 endif()
-# export module square;
-# export import :char_mesh;
-# export import :circle_mesh;
-# export import :cube_mesh;
-# export import :cylinder_mesh;
-# export import :line_mesh;
-# export import :sphere_mesh;
-# export import :square_mesh;
-# export import :torus_mesh;
-# export import :color;
-# export import :mesh;
-# export import :transform;
-# export import :basic_color;
-# export import :basic_texture;
-# export import :camera;
-# export import :material;
-# export import :entity;
-# export import :renderer;
-# export import :sdl_gl;
-# export import :system;
 ## Build Library
 set(LIB_SRC
 src/square.cpp
