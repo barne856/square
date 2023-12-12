@@ -1,5 +1,10 @@
+module;
+#include <vector>
 export module square:basic_color;
 import :material;
+import :camera;
+import :renderer;
+import squint;
 
 export namespace square {
 // Vertex shader inputs:

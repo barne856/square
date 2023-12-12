@@ -1,5 +1,9 @@
+module;
+#include <vector>
 export module square:torus_mesh;
 import :mesh;
+import :renderer;
+import squint;
 
 export namespace square {
 // constructs a torus mesh from a given number of rings, segments on those rings, an inner radius and and outer radius

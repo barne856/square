@@ -1,7 +1,7 @@
 module;
 #include <cstdio>
 #include <string>
-export module squint:color;
+export module square:color;
 import squint;
 
 export namespace square {

@@ -1,12 +1,18 @@
 module;
+#include <vector>
 #include <GL/glew.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <cstring>
 #include <unordered_map>
 #include <fstream>
+#include <iostream>
 export module square:sdl_gl;
 import :renderer;
+import :transform;
+import :system;
+import :mesh;
+import squint;
 
 export namespace square {
 
@@ -393,7 +399,8 @@ sdl_gl_renderer::~sdl_gl_renderer() {
     }
 }
 void sdl_gl_renderer::init() {
-    SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
+    // SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
+    SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11"); // GLEW does not work on wayland yet
     SDL_Init(SDL_INIT_VIDEO); // Init SDL2, VIDEO also inits EVENTS
     // Initialize PNG loading
     int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
@@ -1335,9 +1342,10 @@ GLuint sdl_gl_shader::compile_shader(const shader_src &source) {
 
         std::stringstream ss{};
         ss << "SHADER FAILED TO COMPILE:\n";
-        for (auto &c : error_log) {
-            ss << c;
-        }
+        // convert vector to string
+        std::vector<char> char_log(error_log.begin(), error_log.end());
+        std::string log_string(char_log.begin(), char_log.end());
+        ss << log_string;
 
         glDeleteShader(shader);
         throw std::runtime_error(ss.str());
@@ -1375,9 +1383,10 @@ GLuint sdl_gl_shader::create_program(const std::vector<shader_src> &sources) {
 
         std::stringstream ss{};
         ss << "SHADER PROGRAM FAILED TO LINK:\n";
-        for (auto &c : infoLog) {
-            ss << c;
-        }
+        // convert infoLog vector to string, GLChar to char
+        std::vector char_log(infoLog.begin(), infoLog.end());
+        std::string log_string(char_log.begin(), char_log.end());
+        ss << log_string;
 
         throw std::runtime_error(ss.str());
     }

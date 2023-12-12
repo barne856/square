@@ -83,7 +83,7 @@ target_link_libraries(square ${SDL2_LIBRARIES} ${SDL2IMAGE_LIBRARIES} OpenGL::GL
 
 ## Build Sample Apps
 add_executable(solid_color sample_apps/solid_color/solid_color.cpp)
-target_link_libraries(solid_color square)
+target_link_libraries(solid_color square squint)
 
 add_executable(sample_scene sample_apps/sample_scene/sample_scene.cpp)
 target_link_libraries(sample_scene square)

@@ -9,6 +9,7 @@ import :cube_mesh;
 import :cylinder_mesh;
 import :line_mesh;
 import :square_mesh;
+import :renderer;
 import squint;
 
 export namespace square {

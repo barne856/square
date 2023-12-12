@@ -1,18 +1,14 @@
+module;
+#include <iostream>
+#include <memory>
 export module square:mesh;
 import :transform;
-import :material;
 import :entity;
 import :renderer;
+import :material;
+import squint;
 
 export namespace square {
-// Abstract base class for all mesh types. All meshes are drawable and can be bound to a shader
-class mesh : public transform {
-  public:
-    virtual void bind_material(material *mat) = 0;
-    virtual void draw(material *mat) = 0;
-    virtual void draw(material *mat, const transform *parent) = 0;
-    virtual ~mesh() {}
-};
 // A simple mesh contains a transform (or model matrix) along with a vertex buffer and possibly an index buffer. The
 // vertex buffer must be compatible with any shader bound to the mesh in order to be rendered successfully. This means
 // that any inputs to the vertex shader should be available as buffer attributes in the vertex buffer.

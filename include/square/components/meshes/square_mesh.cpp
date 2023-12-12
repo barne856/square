@@ -1,5 +1,8 @@
+module;
+#include <vector>
 export module square:square_mesh;
 import :mesh;
+import :renderer;
 import squint;
 
 export namespace square {

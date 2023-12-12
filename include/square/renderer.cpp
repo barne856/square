@@ -6,6 +6,8 @@ module;
 export module square:renderer;
 import :transform;
 import :entity;
+import :system;
+import squint;
 
 export namespace square {
 enum class cursor_type {
@@ -266,6 +268,7 @@ class renderer : public object {
     friend class app;
 
   public:
+    renderer() : object() {};
     // api commands (mostly self explanitory see documentaiton for the rendering api for details on that api)
     virtual void clear_color_buffer(squint::fvec4 color) = 0;
     virtual void wireframe_mode(bool enable) = 0;

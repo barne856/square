@@ -1,9 +1,13 @@
 module;
+#define USE_MATH_DEFINES
+#include <cmath>
 #include <concepts>
 export module square:camera;
 import :transform;
 import :entity;
 import :renderer;
+import :system;
+import squint;
 
 export namespace square {
 enum class projection_type { PERSPECTIVE, ORTHOGRAPHIC };

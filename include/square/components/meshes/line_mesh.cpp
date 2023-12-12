@@ -1,5 +1,8 @@
+module;
+#include <vector>
 export module square:line_mesh;
 import :mesh;
+import :renderer;
 
 export namespace square {
 // a line with only geometry, no normals or texture coordinates

@@ -1,5 +1,9 @@
+module;
+#include <vector>
 export module square:basic_texture;
 import :material;
+import :camera;
+import :renderer;
 
 export namespace square {
 // Vertex shader inputs:

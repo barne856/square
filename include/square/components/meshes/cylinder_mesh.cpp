@@ -1,5 +1,8 @@
+module;
+#include <vector>
 export module square:cylinder_mesh;
 import :mesh;
+import :renderer;
 
 export namespace square {
 class cylinder_mesh : public simple_mesh {
