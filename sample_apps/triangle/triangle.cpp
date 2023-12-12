@@ -27,6 +27,7 @@ class triangle_obj : public entity<triangle_obj> {
         squint::fvec2 v1 = {-1.f, -1.f};
         squint::fvec2 v2 = {1.f, -1.f};
         squint::fvec2 v3 = {0.f, 1.f};
+        // TODO make gen_component<>
         mesh = std::move(std::make_unique<triangle_mesh>(
             v1, v2, v3
         ));
