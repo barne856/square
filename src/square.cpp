@@ -7,6 +7,7 @@ export import :line_mesh;
 export import :sphere_mesh;
 export import :square_mesh;
 export import :torus_mesh;
+export import :triangle_mesh;
 export import :color;
 export import :mesh;
 export import :transform;

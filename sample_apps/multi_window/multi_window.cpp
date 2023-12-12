@@ -1,5 +1,5 @@
-// A sample app displaying a solid color on one window to illustrate the
-// use of the square module.
+// A sample app illustrating the use of multiple windows with the square module.
+#include <algorithm>
 import square;
 import squint;
 
@@ -15,12 +15,40 @@ template <typename T> class render_main : public render_system<T> {
     }
 };
 
+// this is the main controls loop for the scene
+template <typename T> class controls_main : public controls_system<T> {
+  public:
+    bool on_key(const key_event &event, T &entity) const override {
+        if (event == key_event::ESCAPE_UP) {
+            app::renderer()->destroy();
+            return true; // consume the event
+        }
+        else if(event == key_event::F11_UP) {
+            // TODO not implemented
+            // app::renderer()->toggle_fullscreen();
+            // return true; // consume the event
+        }
+        else if(event == key_event::UP_UP) {
+            // increase bg color red value
+            float r = entity.bg_color[0];
+            entity.bg_color[0] = std::min(1.0f, r + 0.1f);
+        }
+        else if(event == key_event::DOWN_UP) {
+            // decrease bg color red value
+            float r = entity.bg_color[0];
+            entity.bg_color[0] = std::max(0.0f, r - 0.1f);
+        }
+        return false;
+    }
+};
+
 // This is the main scene for the app
 // It is a simple entity that has a background color
 class main_scene : public entity<main_scene> {
   public:
     main_scene() {
         attach_render_system<render_main>();
+        attach_controls_system<controls_main>();
     }
     fvec4 bg_color = color::parse_hexcode("E67825");
 };
@@ -51,6 +79,7 @@ int main() {
     sdl_gl_renderer::init();
     // add the renderer to the app
     // this will create the window and context, construct the renderer, and call on_enter
+    app::attach_renderer<main_renderer>();
     app::attach_renderer<main_renderer>();
     // run the app
     // this will perform the main loop, updating the scenes via all attached systems

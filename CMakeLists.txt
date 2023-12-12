@@ -45,6 +45,7 @@ include/square/components/meshes/line_mesh.cpp
 include/square/components/meshes/sphere_mesh.cpp
 include/square/components/meshes/square_mesh.cpp
 include/square/components/meshes/torus_mesh.cpp
+include/square/components/meshes/triangle_mesh.cpp
 include/square/components/color.cpp
 include/square/components/mesh.cpp
 include/square/components/transform.cpp
@@ -66,7 +67,13 @@ add_executable(solid_color sample_apps/solid_color/solid_color.cpp)
 target_link_libraries(solid_color square squint)
 
 add_executable(sample_scene sample_apps/sample_scene/sample_scene.cpp)
-target_link_libraries(sample_scene square)
+target_link_libraries(sample_scene square squint)
+
+add_executable(multi_window sample_apps/multi_window/multi_window.cpp)
+target_link_libraries(multi_window square squint)
+
+add_executable(triangle sample_apps/triangle/triangle.cpp)
+target_link_libraries(triangle square squint)
 
 ## Include Catch2 for Unit Tests
 Include(FetchContent)
